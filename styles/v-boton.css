@@ -1,0 +1,74 @@
+/* Estilo para la ventana principal */
+window {
+    background-image: linear-gradient(to bottom, #ed4c49, #8556a8);
+}
+
+/* Estado normal */
+button {
+    background-image: linear-gradient(to bottom, #00aff0, #0078d7);
+    color: white;
+    transition: all 0.1s; /* Hace que el cambio no sea tan brusco */
+}
+
+/* Cuando pasas el mouse (Hover) */
+button:hover {
+    background-image: linear-gradient(to bottom, #21c4ff, #008ae6);
+}
+
+/* Cuando lo presionas (Active) */
+button:active {
+    background-image: linear-gradient(to top, #0078d7, #005a9e);
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3); /* Efecto de hundido */
+    padding-top: 12px; /* Mueve el texto un pixel abajo para simular presión */
+}
+
+entry {
+    font-size: 15px;
+    margin-left: 1px;
+}
+
+textview text {
+    background-color: #f0f4f8; /* Azul muy pálido estilo Windows */
+    color: #333333;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 1.25rem;
+}
+
+/* Para que los mensajes no estén pegados al borde */
+textview {
+    padding: 10px;
+}
+
+#mi-mensaje, #su-mensaje {
+    font-size: 1.25rem;
+    padding: 8px 10px;
+    /* Esto es vital para que la burbuja no sea un bloque rígido */
+    border-style: solid;
+    border-width: 1px;
+}
+
+#mi-mensaje {
+    background-color: #0078d7;
+    color: white;
+    border-color: #005a9e;
+    border-radius: 15px 15px 2px 15px;
+}
+
+#su-mensaje {
+    background-color: #6f1515;
+    color: #ffffff;
+    border-color: #ccc;
+    border-radius: 15px 15px 15px 2px;
+}
+
+#header-messenger {
+    background-image: linear-gradient(to top, #43556c, #c7e8ff);
+    border-bottom: 1px solid #303e54;
+    padding: 10px;
+}
+
+/* Opcional: Dale un estilo diferente a las etiquetas del header */
+#header-messenger label {
+    color: #003399;
+    text-shadow: 1px 1px 1px rgb(0, 0, 0);
+}
