@@ -24,7 +24,7 @@
                 "/usr/include/at-spi-2.0",
                 "/usr/include/dbus-1.0"
             ],
-            "defines": [],
+            "defines": ["CLOCK_REALTIME"],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "cppStandard": "gnu++17",

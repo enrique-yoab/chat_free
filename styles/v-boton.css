@@ -41,7 +41,7 @@ textview {
 
 #mi-mensaje, #su-mensaje {
     font-size: 1.25rem;
-    padding: 8px 10px;
+    padding: 8px 12px;
     /* Esto es vital para que la burbuja no sea un bloque rígido */
     border-style: solid;
     border-width: 1px;
@@ -57,14 +57,16 @@ textview {
 #su-mensaje {
     background-color: #6f1515;
     color: #ffffff;
-    border-color: #ccc;
+    border-color: #000000;
     border-radius: 15px 15px 15px 2px;
 }
 
 #header-messenger {
-    background-image: linear-gradient(to top, #43556c, #c7e8ff);
+    background-image: linear-gradient(to top, #cbe2ff, #d2b5f6);
     border-bottom: 1px solid #303e54;
+    margin-top: 10px;
     padding: 10px;
+    border-radius: 10px;
 }
 
 /* Opcional: Dale un estilo diferente a las etiquetas del header */
