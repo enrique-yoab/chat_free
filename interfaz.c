@@ -1,20 +1,20 @@
 #include <gtk/gtk.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include "conexion.h"
 
-GtkWidget *caja_mensajes; // Variable global para el historial del chat
-GtkAdjustment *adj_chat; // Variable global para el control del scroll
-Mensaje emisor; // Variable global que tendra la infromacion local
-Mensaje receptor; // Variable global que tendra la infromacion de la otra computadora
-char buffer[TAM_MAX]; // Buffer para formatear texto para la interfaz grafica
-char *name_user = "Enrique"; // Nombre de usuario local
-char *name_guest = "Mario";  // Nombre del contacto 
-char *estados[] = {"Activo", "Ocupado", "Desconectado"}; // Estados de conexion
-int puerto_actual = 3000; // Puerto local (pruebas)
-bool user = true; // Variable para controlar el mensaje a mostrar en la interfaz grafica
+GtkWidget *caja_mensajes; 
+GtkAdjustment *adj_chat; 
+char buffer[TAM_MAX]; 
+char *name_guest = "Mario";  
+// char *name_guest = "Enrique";  
+char *estados[] = {"Activo", "Ocupado", "Desconectado"}; 
+int puerto_actual = 3000; 
 
-// Función auxiliar para el scroll (se ejecuta cuando la interfaz está libre)
+// Puntero para mantener la referencia a las tuberías globales en los callbacks
+Tuberia *gui_pipe_ref;
+
 static gboolean scroll_al_final(gpointer data) {
     double max = gtk_adjustment_get_upper(adj_chat);
     double page = gtk_adjustment_get_page_size(adj_chat);
@@ -44,12 +44,31 @@ static void añadir_burbuja(const char *texto, gboolean es_mio) {
 
     gtk_container_add(GTK_CONTAINER(alineacion), burbuja);
     gtk_box_pack_start(GTK_BOX(caja_mensajes), alineacion, FALSE, FALSE, 0);
-
     gtk_widget_show_all(alineacion);
 
-    // --- AUTO-SCROLL SEGURO ---
-    // Usamos g_idle_add para esperar a que el widget se dibuje y luego bajar
     g_idle_add(scroll_al_final, NULL);
+}
+
+// --- TIMER ASÍNCRONO PARA LA INTERFAZ ---
+// Revisa si llegó algo al pipe D[0] (enviado desde el Interceptor)
+static gboolean revisar_pipe_gui(gpointer data) {
+    Tuberia datos_recibidos;
+    
+    // Al estar en modo O_NONBLOCK, si no hay datos devuelve <= 0 de inmediato sin congelar la GUI
+    ssize_t bytes = read(gui_pipe_ref->D[0], &datos_recibidos, sizeof(Tuberia));
+    
+    if (bytes > 0) {
+        if (datos_recibidos.intermedio.tipo == RECEPCION) {
+            // Es un mensaje que viene del backend/red
+            añadir_burbuja(datos_recibidos.intermedio.peticion, FALSE);
+        }
+        else if (datos_recibidos.intermedio.tipo == SALIDA) {
+            // Si llega orden de salida externa, cerramos la interfaz
+            gtk_main_quit();
+            return FALSE;
+        }
+    }
+    return TRUE; // Mantiene el timer vivo cada 100ms
 }
 
 static void on_button_clicked(GtkWidget *widget, gpointer data) {
@@ -57,10 +76,20 @@ static void on_button_clicked(GtkWidget *widget, gpointer data) {
     const char *texto = gtk_entry_get_text(entry);
     
     if (strlen(texto) > 0) {
-        añadir_burbuja(texto, user); // Agrega el mensaje a la interfaz gráfica
-        gtk_entry_set_text(entry, "Escriba mensaje..."); // Limpia el campo de entrada
-        strcpy(emisor.peticion, texto); // Guadamos el mensaje en la estructura global para enviarlo
-        user = !user;
+        // 1. Mostramos localmente nuestra burbuja
+        añadir_burbuja(texto, TRUE); 
+        
+        // 2. Empaquetamos la estructura para enviarla por la tubería A
+        Tuberia paquete_envio = *gui_pipe_ref;
+        paquete_envio.intermedio.tipo = ENVIO;
+        paquete_envio.intermedio.id_computadora = 1; // Tu ID
+        strncpy(paquete_envio.intermedio.peticion, texto, TAM_MAX - 1);
+        
+        // Escribimos en la tubería A (Padre -> Interceptor)
+        write(gui_pipe_ref->A[1], &paquete_envio, sizeof(Tuberia));
+        
+        // 3. Limpiamos el cuadro de texto
+        gtk_entry_set_text(entry, ""); 
     }
 }
 
@@ -73,8 +102,11 @@ void cargar_css(void) {
     g_object_unref(provider);
 }
 
-int main(int argc, char *argv[]) {
+void interfaz(int argc, char *argv[], Tuberia *padre) {
     GtkWidget *window, *box, *entry, *scrolled_window, *hbox, *button, *header_box, *info_contacto;
+
+    // Guardamos la referencia para usarla en los clicks y en el timer
+    gui_pipe_ref = padre;
 
     gtk_init(&argc, &argv);
     cargar_css();
@@ -87,35 +119,29 @@ int main(int argc, char *argv[]) {
     box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(window), box);
 
-    // Header
     header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_widget_set_name(header_box, "header-messenger");
     gtk_box_pack_start(GTK_BOX(box), header_box, FALSE, FALSE, 0);
     info_contacto = gtk_label_new(NULL);
-    // // Usamos snprintf para mezclar las etiquetas de estilo con tus variables
+    
     snprintf(buffer, sizeof(buffer), 
         "<span font='11' weight='bold' foreground='#003399'>%s</span>\n"
         "<span font='9' foreground='#666'>Puerto: %d - %s</span>", 
-        name_guest, puerto_actual, estados[2]);
+        name_guest, puerto_actual, estados[0]);
 
-    // Ahora le pasamos el resultado a la etiqueta
     gtk_label_set_markup(GTK_LABEL(info_contacto), buffer);
     gtk_box_pack_start(GTK_BOX(header_box), info_contacto, FALSE, FALSE, 15);
 
-    // Scroll y Caja de Mensajes
     scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_box_pack_start(GTK_BOX(box), scrolled_window, TRUE, TRUE, 0);
 
-    // IMPORTANTE: Obtenemos el ajuste vertical de la ScrolledWindow directamente aquí
     adj_chat = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
 
     caja_mensajes = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_valign(caja_mensajes, GTK_ALIGN_END); // Inicia abajo
+    gtk_widget_set_valign(caja_mensajes, GTK_ALIGN_END); 
     gtk_container_add(GTK_CONTAINER(scrolled_window), caja_mensajes);
 
-    // Área de entrada
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    // En lugar de gtk_widget_set_margin_all(hbox, 10);
     gtk_widget_set_margin_start(hbox, 10);
     gtk_widget_set_margin_end(hbox, 10);
     gtk_widget_set_margin_top(hbox, 10);
@@ -132,8 +158,10 @@ int main(int argc, char *argv[]) {
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
     gtk_widget_set_size_request(button, 100, 50);
 
+    // --- ACTIVAR MONITOREO DE TUBERÍA ---
+    // Agrega el revisor no bloqueante a la cola de eventos de GTK
+    g_timeout_add(100, revisar_pipe_gui, NULL);
+
     gtk_widget_show_all(window);
     gtk_main();
-
-    return 0;
 }

@@ -5,10 +5,18 @@
 #include <string.h>
 #include <pthread.h>
 #include <sys/wait.h>
+#include <gtk/gtk.h>
+#include <fcntl.h>
 #include "conexion.h"
 
 // Variables globales internas del proceso (cada proceso tiene su propia copia tras el fork)
 Tuberia emisora, receptora;
+// Definición de puertos para el nodo local
+int mi_puerto_escucha = 3000; // El puerto local
+int puerto_amigo = 3001; // El puerto externo
+int mi_id = 10;  // ID de mi computadora
+char *nombre = "Enrique"; // Nombre local
+char *ip_amiga = "127.0.0.1"; // Aqui va la ip remota
 
 // Escribe en el canal de salida del proceso padre o hijo
 void avisar(Tuberia interceptada)
@@ -49,7 +57,7 @@ void *hilo_lector(void *arg)
         ssize_t bytes = read(pipe_lectura, &recepcion, sizeof(Tuberia));
         if (bytes <= 0) break; // EOF o error: el escritor cerró el pipe
 
-        // ── SALIDA: reenviar en cascada y salir ──────────────────
+        // --------- SALIDA: reenviar en cascada y salir ---------
         if (recepcion.intermedio.tipo == SALIDA)
         {
             printf("[PROCESO %d%s] SALIDA recibida → cerrando hilo.\n",
@@ -67,38 +75,24 @@ void *hilo_lector(void *arg)
             break; // Salimos del bucle
         }
 
-        // ── ENVIO ────────────────────────────────────────────────
+        // --------- ENVIO ---------
         if (recepcion.intermedio.tipo == ENVIO)
         {
-            emisora = recepcion;
-            printf("[PROCESO %d] ENVIO recibido: \"%s\"\n",
-                   proceso->identificador, recepcion.intermedio.peticion);
-
-            // TEST: El hijo imprime el mensaje y lo devuelve como eco
-            if (proceso->identificador == 2)
+            if (proceso->identificador == 1)
             {
-                Tuberia eco = recepcion;
-                eco.intermedio.tipo = RECEPCION;
-                strcpy(eco.intermedio.peticion, "Eco desde Hijo: mensaje recibido OK");
-                printf("[HIJO]       Enviando eco → \"%s\"\n", eco.intermedio.peticion);
-                write(proceso->C[1], &eco, sizeof(Tuberia));
+                printf("[INTERMEDIARIO] Se transmite el mensaje del usuario...\n");
             }
         }
-        // ── RECEPCION ────────────────────────────────────────────
+        // --------- RECEPCION ---------
         else
         {
             receptora = recepcion;
             printf("[PROCESO %d] RECEPCION recibida: \"%s\"\n",
                    proceso->identificador, recepcion.intermedio.peticion);
 
-            // TEST: El padre confirma que llegó el eco e inicia el apagado
-            if (proceso->identificador == 0)
+            if (proceso->identificador == 2)
             {
-                printf("[PADRE]      Eco confirmado por el hijo...\n");
-                // recepcion.intermedio.tipo = SALIDA;
-                // write(proceso->A[1], &recepcion, sizeof(Tuberia));
-                // // Tras escribir SALIDA en A, volvemos al read(D[0]) y
-                // // esperamos que la cascada nos devuelva SALIDA por D.
+                printf("[PADRE]      Recibi un mensaje...\n");
             }
         }
 
@@ -110,41 +104,37 @@ void *hilo_lector(void *arg)
     return NULL;
 }
 
-// ─────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------
 //  PROCESO 0 — PADRE  (Interfaz / GUI)
 //  Tuberias: escribe en A, lee en D
-// ─────────────────────────────────────────────────────────────────
+// ------------------------------------------------------------------
 void process0(Tuberia *padre)
 {
-    close(padre->C[0]); close(padre->C[1]); // Cerramos C
-    close(padre->B[0]); close(padre->B[1]); // Cerramos B
-    close(padre->A[0]); // No lee en A
-    close(padre->D[1]); // No escribe en D
+    // 1. Cerramos los canales de los otros procesos como ya lo hacías
+    close(padre->C[0]); close(padre->C[1]); 
+    close(padre->B[0]); close(padre->B[1]); 
+    close(padre->A[0]); 
+    close(padre->D[1]); 
 
-    // Arrancamos el hilo que escucha D (respuestas del hijo)
-    pthread_t t_lector_D;
-    pthread_create(&t_lector_D, NULL, hilo_lector, padre);
+    // 2. Dejamos el pipe D[0] en modo NO BLOQUEANTE.
+    // Esto es vital para que el temporizador de GTK pueda asomarse a ver si hay mensajes
+    // cada 100ms sin congelar la ventana si el tubo está vacío.
+    fcntl(padre->D[0], F_SETFL, O_NONBLOCK);
 
-    // ── TEST: enviar mensaje al hijo ─────────────────────────────
-    sleep(1); // Damos tiempo a que los otros procesos estén listos
-    Tuberia prueba = *padre;
-    prueba.intermedio.tipo = ENVIO;
-    strcpy(prueba.intermedio.peticion, "Hola desde Padre");
-    printf("[PADRE]      Enviando ENVIO → \"%s\"\n", prueba.intermedio.peticion);
-    write(padre->A[1], &prueba, sizeof(Tuberia));
-    
-    sleep(1); // Damos tiempo a que los otros procesos estén listos
-    prueba.intermedio.tipo = SALIDA;
-    strcpy(prueba.intermedio.peticion, "Buenas noches Hijo");
-    printf("[PADRE]      Enviando SALIDA → \"%s\"\n", prueba.intermedio.peticion);
-    write(padre->A[1], &prueba, sizeof(Tuberia));
-    // ─────────────────────────────────────────────────────────────
+    // 3. Lanzamos tu interfaz pasándole la estructura global de tuberías
+    interfaz(0, NULL, padre);
 
-    pthread_join(t_lector_D, NULL); // Espera hasta recibir SALIDA de vuelta
+    // 4. Cuando el usuario cierra la ventana (sale de interfaz), enviamos SALIDA
+    Tuberia apagado = *padre;
+    apagado.intermedio.tipo = SALIDA;
+    write(padre->A[1], &apagado, sizeof(Tuberia));
+
+    // Damos un segundo para que los otros procesos reciban la onda de cierre
+    sleep(1);
 
     close(padre->A[1]);
-    close(padre->D[0]);
-    printf("[PADRE]      Pipes cerrados. Proceso 0 finalizado.\n");
+    close(padre->D[0]); // Aquí recién se destruye el oído de la GUI al apagar el sistema
+    printf("[PADRE] Todo cerrado. Adios.\n");
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -183,13 +173,14 @@ void process2(Tuberia *hijo)
     close(hijo->D[0]); close(hijo->D[1]);
     close(hijo->B[1]); // No escribe en B
     close(hijo->C[0]); // No lee en C
+    
+    printf("[HIJO] Pasando el control directo al motor P2P...\n");
+    
+    // Arrancamos el backend. Bloqueará el proceso de forma controlada leyendo la tuberia B[0]
+    conexion_p2p(mi_puerto_escucha, puerto_amigo, mi_id, ip_amiga, nombre, hijo);
 
-    pthread_t t_lector_B;
-    pthread_create(&t_lector_B, NULL, hilo_lector, hijo);
-
-    pthread_join(t_lector_B, NULL);
-
+    // Cierre ordenado al terminar
     close(hijo->B[0]);
     close(hijo->C[1]);
-    printf("[HIJO]        Pipes cerrados. Proceso 2 finalizado.\n");
+    printf("[HIJO] Pipes cerrados. Proceso 2 finalizado.\n");
 }
