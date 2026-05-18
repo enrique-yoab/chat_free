@@ -26,8 +26,8 @@ typedef struct {
 
 // ----- Mensaje que realmente se transmite -----
 typedef struct {
-    TipoMsj tipo; // 
-    int id_computadora;    // 0 = comando interno, > 0 = id del peer
+    TipoMsj tipo;
+    int id_computadora;
     char name_user[TAM_MAX];
     char peticion[TAM_MAX];
     tiempo envio;
@@ -43,7 +43,7 @@ typedef struct {
     int A[2];  // Tuberia -> Padre a Interceptor
     int B[2];  // Tuberia -> Interceptor a hijo
     int C[2];  // Tuberia -> Hijo a Interceptor
-    int D[2];  // Tuberia -> Inerceptor a Padre
+    int D[2];  // Tuberia -> Interceptor a Padre
 } Tuberia;     // Tuberia[2] -> [lectura, escritura]
 
 // ----- Declaraciones -----

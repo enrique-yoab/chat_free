@@ -1,0 +1,252 @@
+\documentclass[12pt]{article}
+\usepackage{bookmark}
+% --- Paquetes para el diseño ---
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[spanish,provide=*]{babel}
+\usepackage[margin=1.5cm,top=2cm, bottom=3cm,headheight=0pt, headsep=0.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{tcolorbox} % Para los cuadros grises redondeados
+\tcbuselibrary{breakable}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{fancyhdr}   % Para el encabezado de las páginas siguientes
+\usepackage{titlesec}   % Para personalizar los títulos
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{amssymb} % Necesario para los símbolos N y Z
+\usepackage{amsmath} % Recomendado para texto dentro de fórmulas
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{setspace}
+
+% Traducción a español
+\algrenewcommand\algorithmicprocedure{\textbf{Procedimiento}}
+\algrenewcommand\algorithmicif{\textbf{Si}}
+\algrenewcommand\algorithmicthen{\textbf{Entonces}}
+\algrenewcommand\algorithmicelse{\textbf{Sino}}
+\algrenewcommand\algorithmicend{\textbf{Fin}}
+\algrenewcommand\algorithmicfor{\textbf{Para}}
+\algrenewcommand\algorithmicwhile{\textbf{Mientras}}
+\algrenewcommand\algorithmicdo{\textbf{Hacer}}
+\algrenewcommand\algorithmicreturn{\textbf{Salir}}
+\algrenewcommand\algorithmicrepeat{\textbf{Repetir}}
+\algrenewcommand\algorithmicuntil{\textbf{Hasta que}}
+
+\renewcommand{\baselinestretch}{1.1} % 1.3 equivale aproximadamente a un interlineado de 1.5
+
+% Configuración para quitar "Listing #:"
+\DeclareCaptionFormat{listing}{\textbf{#3}}
+
+% --- ESTILO PARA C (Multihilos) ---
+\lstdefinestyle{estiloC}{
+    language=C,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{orange},
+    numbers=left,
+    numberstyle=\tiny\color{green!50!black},
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    rulecolor=\color{black},
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=4,
+    keepspaces=true,
+    columns=flexible,
+    xleftmargin=20pt,
+    morekeywords={NULL, sendto, recvfrom, bzero, printf, close, exit, perror, strlen, memset, bind,
+                typedef, struct},
+    extendedchars=true,
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1
+}
+
+% --- Configuración de los cuadros (Estilo idéntico al documento) ---
+\tcbset{
+    estilo_practica/.style={
+        colback=gray!20,      % Color de fondo gris claro
+        colframe=gray!20,     % Color del borde (igual al fondo)
+        arc=12pt,             % Redondeo de las esquinas
+        boxrule=0pt,
+        left=15pt, right=15pt, top=8pt, bottom=8pt,
+        halign=center,        % Alineación del texto dentro
+        fonttitle=\bfseries\large,
+        coltitle=black,
+        before skip=10pt,
+        after skip=10pt
+    }
+}
+
+% --- Configuración de Colores ---
+\definecolor{azul_unam}{RGB}{31, 78, 121} % Azul similar al de la imagen
+
+% --- Estilo de los Títulos (Azul y Negrita) ---
+\titleformat{\section}
+  {\color{azul_unam}\normalfont\bfseries\centering}{}{0pt}{}
+  
+\titleformat{\subsection}
+  {\color{azul_unam}\normalfont\bfseries}{}{0pt}{\thesubsection\ }
+
+\titleformat{\subsubsection}
+  {\color{azul_unam}\normalfont\bfseries}{}{0pt}{\thesubsubsection\ }
+
+% --- Configuración del Encabezado (Páginas Siguientes) ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{azul_unam}\leaders\hrule height \headrulewidth\hfill}}
+
+\fancyhead[L]{
+    \small \includegraphics[height=1.25cm]{logo_fi.png} % Ajusta el nombre de tu archivo
+    \quad Facultad de Ingeniería UNAM
+}
+\fancyhead[R]{\small \textit{Sistemas Distribuidos}}
+\fancyfoot[C]{\thepage}
+
+\setlength{\headheight}{50.95274pt}
+\addtolength{\topmargin}{-22.95274pt}
+\setlength{\parindent}{0pt}
+
+% --- CUERPO DEL DOCUMENTO ---
+\begin{document} 
+\pagestyle{empty} % Quitar números de página en la portada
+
+\vspace*{-3.0cm}
+% --- Encabezado con Logos ---
+\begin{table}[h]
+\centering
+\begin{tabular}{m{3.5cm} m{9cm} m{3.5cm}}
+    \includegraphics[width=3cm]{logo_unam.png} & 
+    \centering
+    \textcolor[rgb]{0.2, 0.4, 0.6}{\textbf{\large Práctica 2. Sockets}} \\
+    \small Prof Carmen Lucia Bustillo Hernández \\
+    \texttt{\small carmenbustillohernandez@gmail.com} & 
+    \centering
+    \includegraphics[width=2.85cm]{logo_fi.png} \\ 
+\end{tabular}
+\end{table}
+
+\vspace{-1.25cm}
+% --- Títulos Centrales ---
+\begin{center}
+    {\large Facultad de Ingeniería} \\
+    \textbf{Asignatura: Sistemas Distribuidos} \\
+    Universidad Nacional Autónoma de México \\
+    Fecha de Entrega: 9 de Abril de 2026
+\end{center}
+
+% --- Cuadro: Datos de Alumno ---
+\begin{tcolorbox}[estilo_practica]
+    \begin{center}
+        \textbf{Datos del Alumno}
+    \end{center}
+    \begin{flushleft}
+        \textbf{Nombre:} Enrique Yoab Cortez Rios \\ 
+        \textbf{Matrícula:} 317302992
+    \end{flushleft}
+    \vspace{0.1cm}
+\end{tcolorbox}
+
+% --- Cuadro: Objetivo General ---
+\begin{tcolorbox}[estilo_practica]
+    \begin{center}
+        \textbf{Objetivo General}
+    \end{center}
+    \centering \small El alumno comprenderá el funcionamiento de los diferentes algoritmos de exclusión mutua para sistemas distribuidos e implementará los mismos mediante simulaciones utilizando procesos e hilos o sockets respectivamente.
+\end{tcolorbox}
+
+% --- Cuadro: Objetivos Específicos ---
+\begin{tcolorbox}[estilo_practica]
+    \begin{center}
+        \textbf{Objetivos Específicos}
+    \end{center}
+    \begin{enumerate}
+        \item Implementar la simulación de algorítmos de exclusión mutua en sistemas distribuidos.
+    \end{enumerate}
+    \vspace{0.1cm}
+\end{tcolorbox}
+
+% --- Cuadro: Material ---
+\begin{tcolorbox}[estilo_practica]
+    \begin{center}
+        \textbf{Material}
+    \end{center}
+    \begin{enumerate}
+        \item Equipo de cómputo con sistema operativo Windows. Mac o Linux y acceso a Internet.
+        \item Editor de textos (MS Word, Libre Office).
+        \item Compilador o IDE de lenguajes de programación.
+    \end{enumerate}
+    \vspace{0.1cm}
+\end{tcolorbox}
+
+% --- Cuadro: Bibliografía ---
+\begin{tcolorbox}[estilo_practica]
+    \begin{center}
+        \textbf{Bibliografía}
+    \end{center}
+    \begin{enumerate}
+        \item Tanenbaum, A. S. (2004). Sistemas operativos modernos. En Prentice-Hall, Inc eBooks . http://dl.acm.org/citation.cfm?id=120575
+    \end{enumerate}
+    \vspace{0.1cm}
+\end{tcolorbox}
+
+\newpage % --- Segunda Pagina
+\pagestyle{fancy}
+
+\section{\large 1. Instrucciones Generales}
+
+\begin{enumerate}
+    \item Realizar cada uno de los problemas prácticos con las indicaciones que se solicitan.
+    \item Para cada uno de los problemas, desarrolle su diagrama de flujo y pseudocódigo respectivamente.
+\end{enumerate}
+
+\section{\large 2. Criterios de Evaluación}
+
+\begin{enumerate}
+    \item Se evaluará de acuerdo con los Criterios de Evaluación que se encuentra en el Google Classroom de la asignatura.
+\end{enumerate}
+
+\section{\large 3. Problemas}
+% Primer archivo de codigo principal de Lamport
+% \input{Lamport1.tex}
+% % Segundo archivo de codigo conexion p2p
+% \input{Lamport2.tex}
+% % Tercer archivo que tiene el pseudocodigo de lamport
+% \input{Pseudo_Lamp.tex}
+% % Cuarto archivo ejecucion de lamport
+% \input{ejecucion_lamp.tex}
+% % Quintpo archivo que contiene el codigo principal de vectores
+% \input{Vectorial1.tex}
+% % Sexto archivo que contiene el pseudocododifgo de vectores
+% \input{Pseudo_Vector.tex}
+% % Septimo achivo ejecucion de vectoriales
+% \input{ejecucion_vecto.tex}
+% % Octavo archivo que tiene el codigo principal de cristian
+% \input{Cristian1.tex}
+% % Noveno archivo que contiene el pseudocodigo de cristian
+% \input{Pseudo_Cristian.tex}
+% % Decimo archivo ejecucion de cristian
+% \input{ejecucion_cris.tex}
+
+\newpage
+\section{Conclusiónes}
+
+El desarrollo de esta práctica resultó un verdadero reto, principalmente por la necesidad de establecer conexiones P2P y Cliente-Servidor para gestionar distintos algoritmos de sincronización de manera simultánea. Al final, se demostró que estos algoritmos pueden integrarse exitosamente en múltiples procesos, adaptándose a las necesidades de diferentes arquitecturas de red.
+
+Este proyecto me permitió observar de primera mano cómo operan las aplicaciones a bajo nivel. Demostró la importancia vital de mantener un control absoluto sobre los procesos creados (\texttt{forks} e hilos), garantizando su correcta sincronización para evitar problemas lógicos, de concurrencia o de latencia.
+
+Se logró implementar una comunicación efectiva mediante sockets TCP y UDP; sin embargo, esto representa un desafío constante para el programador. Al ser la base sobre la cual opera toda aplicación de red, su complejidad exige un diseño sumamente estructurado. Quedó claro que es imposible comprender, modificar o escalar un sistema distribuido si no se cuenta con un control de ejecución riguroso y una documentación estricta sobre el ciclo de vida de cada proceso.
+
+\section{Referencias}
+\begin{itemize}
+    \item CRUD - Glosario de MDN Web Docs | MDN. (s. f.). \url{https://developer.mozilla.org/es/docs/Glossary/CRUD}
+    \item Amazon Web Services. (s. f.). ¿Qué es un cliente ligero? Amazon Web Services, Inc. \url{https://aws.amazon.com/es/what-is/thin-client/}
+    \item Amazon Web Services. (s. f.-b). Qué es una CLI (interfaz de la línea de comandos)? Amazon Web Services, Inc. Amazon Web Services. (s. f.-b). Qué es una CLI (interfaz de la línea de comandos)? Amazon Web Services, Inc. \url {https://aws.amazon.com/es/what-is/cli}
+\end{itemize}
+
+\end{document}

@@ -7,8 +7,7 @@
 GtkWidget *caja_mensajes; 
 GtkAdjustment *adj_chat; 
 char buffer[TAM_MAX]; 
-char *name_guest = "Mario";  
-// char *name_guest = "Enrique";  
+char *name_guest = "Usuario - PUERTO";  
 char *estados[] = {"Activo", "Ocupado", "Desconectado"}; 
 int puerto_actual = 3000; 
 
