@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1780348227.18372 "/home/enrique/Documents/Sistemas Distribuidos/Proyecto/chat_free/Documentacion/Proyecto_final.tex" "Proyecto_final.pdf" "Proyecto_final" 1780348228.36351 0
+["pdflatex"] 1780367668.04257 "/home/enrique/Documents/Sistemas Distribuidos/Proyecto/chat_free/Documentacion/Proyecto_final.tex" "Proyecto_final.pdf" "Proyecto_final" 1780367669.23656 0
   "/etc/texmf/web2c/texmf.cnf" 1771219098.53345 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/enrique/Documents/Sistemas Distribuidos/Proyecto/chat_free/Documentacion/Proyecto_final.tex" 1780348226.98323 12625 f6255d4eb432793a8b55c81199e4af33 ""
+  "/home/enrique/Documents/Sistemas Distribuidos/Proyecto/chat_free/Documentacion/Proyecto_final.tex" 1780367667.84876 12911 5b4ede4a35cf28f5c6be49c3c19ac64a ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1246382020 916 f87d7c45f9c908e672703b83b72241a3 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam7.tfm" 1246382020 928 2dc8d444221b7a635bb58038579b861a ""
@@ -188,8 +188,8 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1777256873.96257 165012 f177baa1c39a3ebd62c3096a43521a0d ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1777340733 6852673 aee4cab200863a8eaae87b5f2d401498 ""
-  "Proyecto_final.aux" 1780348228.28487 3805 cb7ed7f2fb0d8f96a67884194f30ac22 "pdflatex"
-  "Proyecto_final.tex" 1780348226.98323 12625 f6255d4eb432793a8b55c81199e4af33 ""
+  "Proyecto_final.aux" 1780367669.15687 3805 0ac301d7a9e09ea3e0348b8c15a8159c "pdflatex"
+  "Proyecto_final.tex" 1780367667.84876 12911 5b4ede4a35cf28f5c6be49c3c19ac64a ""
   "codigo1.tex" 1780347065.89328 1153 818ff49b611bd0ea5bdb9b76591cdc80 ""
   "logo_fi.png" 1778985642.24495 74837 833902e07b5db5a486bbb8fc69d811e7 ""
   "logo_unam.png" 1778985642.25494 237072 066cabdc10addf78a5f13595056dd58c ""

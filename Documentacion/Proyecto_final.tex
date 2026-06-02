@@ -248,6 +248,7 @@
 Este archivo contiene las declaraciones de las estructuras de datos y la definción de las funciones utilizadas para la implementación del proyecto. 
 \begin{itemize}
     \item \textbf{Estructura de Datos:} Se definen 2 estructuras principales; \texttt{Mensaje} y \texttt{TipoMensaje}. La primera encapsula la información relevante de cada mensaje, el id del proceso que lo envía, el contenido del mensaje, la IP y el puerto del nodo remoto, así como el tipo de mensaje que se está transmitiendo. La segunda estructura, es un enumerado que categoriza los mensajes en tres tipos; \texttt{ENVIO}, \texttt{RECIBIDO} y \texttt{SALIDA}, lo que permite una gestión eficiente de los flujos de datos y la lógica de control entre ambos procesos.
+    \item \textbf{Funciones del Back-End:} se usan 6 funciones para el proceso de red, cada una con un rol especifico en la gestión de la comunicación y la concurrencia. Estas funciones incluyen los hilos lectores y escritores tanto para la comunicación P2P como para las tuberías.
 \end{itemize}
 \input{codigo1.tex}
 % Debemos agregar el codigo en otro archivo latex

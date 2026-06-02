@@ -6,14 +6,15 @@
 #include <netinet/in.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <sys/time.h>
 #include "header.h"
 
-volatile int encendido = 1; 
-volatile int activo    = 1;
-volatile int escribe   = 0; 
-volatile int regresa   = 0; 
+volatile int encendido = 1;
+volatile int activo = 1;
+volatile int escribe = 0;
+volatile int regresa = 0;
 
-int PUERTO = 4000; // El puerto que usamos nosotros
+int PUERTO = 4000;              // El puerto que usamos nosotros
 char DIRECTION[] = "127.0.0.1"; // No se cambia la ip de nuestra compu
 
 Mensaje interfaz;
@@ -46,15 +47,24 @@ void *hilo_lector_p2p(void *arg)
     int opt = 1;
     Mensaje msg_recibido;
 
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) pthread_exit(NULL);
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+        pthread_exit(NULL);
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PUERTO);
 
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) { close(server_fd); pthread_exit(NULL); }
-    if (listen(server_fd, 5) < 0) { close(server_fd); pthread_exit(NULL); }
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
+    {
+        close(server_fd);
+        pthread_exit(NULL);
+    }
+    if (listen(server_fd, 5) < 0)
+    {
+        close(server_fd);
+        pthread_exit(NULL);
+    }
 
     while (encendido)
     {
@@ -69,17 +79,19 @@ void *hilo_lector_p2p(void *arg)
             if (msg_recibido.id_emisor == -1)
             {
                 printf("[GLOBAL] Evento de cierre... Cerrando hilos...\n");
-                encendido = 0; activo = 0; 
-                close(local->B[0]); close(local->A[1]);
+                encendido = 0;
+                activo = 0;
+                close(local->B[0]);
+                close(local->A[1]);
                 close(new_socket);
-                break; 
+                break;
             }
             else
             {
                 printf("Hilo recibio mensaje en %d...\n", PUERTO);
                 msg_recibido.tipo = RECEPCION;
                 memcpy(&externo, &msg_recibido, sizeof(Mensaje));
-                regresa = 1; 
+                regresa = 1;
             }
             close(new_socket);
         }
@@ -94,11 +106,11 @@ void *hilo_escritor_p2p(void *arg)
     {
         if (escribe == 1)
         {
-            escribe = 0; 
+            escribe = 0;
             enviar_msj(interfaz.ip_destino, interfaz.puerto_destino, interfaz);
             printf("Hilo envio mensaje a %d...\n", interfaz.puerto_destino);
         }
-        usleep(1000); 
+        usleep(1000);
     }
     pthread_exit(NULL);
 }
@@ -115,16 +127,20 @@ void *hilo_lector_pipe(void *arg)
         {
             if (msg_pipe.id_emisor == -1)
             {
-                enviar_msj(DIRECTION, PUERTO, msg_pipe); 
-                break; 
+                enviar_msj(DIRECTION, PUERTO, msg_pipe);
+                break;
             }
             else
             {
                 printf("Recibi Mensaje de la GUI...\n");
                 memcpy(&interfaz, &msg_pipe, sizeof(Mensaje));
-                escribe = 1; 
+                escribe = 1;
             }
-        } else { break; }
+        }
+        else
+        {
+            break;
+        }
     }
     close(local->B[0]);
     pthread_exit(NULL);
@@ -135,12 +151,12 @@ void *hilo_escritor_pipe(void *arg)
     Tuberia *local = (Tuberia *)arg;
     while (activo)
     {
-        if(regresa == 1)
+        if (regresa == 1)
         {
             regresa = 0;
             write(local->A[1], &externo, sizeof(Mensaje));
         }
-        usleep(1000); 
+        usleep(1000);
     }
     close(local->A[1]);
     pthread_exit(NULL);
@@ -151,14 +167,37 @@ void enviar_msj(char *ip_destino, int puerto_destino, Mensaje msg)
     int sock = 0;
     struct sockaddr_in serv_addr;
 
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) return;
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+        return;
     serv_addr.sin_port = htons(puerto_destino);
     serv_addr.sin_family = AF_INET;
-    
-    if (inet_pton(AF_INET, ip_destino, &serv_addr.sin_addr) <= 0) { close(sock); return; }
+
+    if (inet_pton(AF_INET, ip_destino, &serv_addr.sin_addr) <= 0)
+    {
+        close(sock);
+        return;
+    }
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) >= 0)
     {
         send(sock, &msg, sizeof(Mensaje), 0);
     }
     close(sock);
+}
+
+// Función para obtener el tiempo en milisegundos
+long long get_time_ms()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (long long)(tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
+}
+
+// Función para transformar ms a HH:MM:SS:ms
+void formatear_tiempo_str(long long tiempo_ms, char *buffer_salida)
+{
+    time_t segundos = tiempo_ms / 1000;
+    int milisegundos = tiempo_ms % 1000;
+    struct tm *tm_info = localtime(&segundos);
+
+    sprintf(buffer_salida, "%02d:%02d:%02d:%03d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec, milisegundos);
 }

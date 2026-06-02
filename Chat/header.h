@@ -15,7 +15,8 @@ typedef struct {
     char texto[TAM_MAX];        
     char ip_destino[16];     
     int puerto_destino;      
-    TipoMensaje tipo;        
+    TipoMensaje tipo;
+    long long tiempo;         
 } Mensaje;
 
 typedef struct {
@@ -30,6 +31,8 @@ void *hilo_lector_pipe(void *arg);
 void *hilo_escritor_pipe(void *arg);
 void conexion(Tuberia *local);
 void enviar_msj(char *ip_destino, int puerto_destino, Mensaje msg);
+long long get_time_ms();
+void formatear_tiempo_str(long long tiempo_ms, char *buffer_salida);
 
 // Prototipos del Frontend / Interfaz (interfaz.c)
 void *hilo_lector_gui(void *arg);
