@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.4.27)  16 MAY 2026 20:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.4.27)  1 JUN 2026 15:10
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -600,7 +600,7 @@ Document Style - pseudocode environments for use with the `algorithmicx' style
 ) (/usr/share/texlive/texmf-dist/tex/latex/setspace/setspace.sty
 Package: setspace 2022/12/04 v6.7b set line spacing
 )
-LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 116.
+LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 134.
  (/usr/share/texmf/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
@@ -610,25 +610,25 @@ File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
 ) (./Proyecto_final.aux)
 \openout1 = `Proyecto_final.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 116.
-LaTeX Font Info:    ... okay on input line 116.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 116.
-LaTeX Font Info:    ... okay on input line 116.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 116.
-LaTeX Font Info:    ... okay on input line 116.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 116.
-LaTeX Font Info:    ... okay on input line 116.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 116.
-LaTeX Font Info:    ... okay on input line 116.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 116.
-LaTeX Font Info:    ... okay on input line 116.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 116.
-LaTeX Font Info:    ... okay on input line 116.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 116.
-LaTeX Font Info:    ... okay on input line 116.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 116.
-LaTeX Font Info:    ... okay on input line 116.
-Package hyperref Info: Link coloring OFF on input line 116.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 134.
+LaTeX Font Info:    ... okay on input line 134.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 134.
+LaTeX Font Info:    ... okay on input line 134.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 134.
+LaTeX Font Info:    ... okay on input line 134.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 134.
+LaTeX Font Info:    ... okay on input line 134.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 134.
+LaTeX Font Info:    ... okay on input line 134.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 134.
+LaTeX Font Info:    ... okay on input line 134.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 134.
+LaTeX Font Info:    ... okay on input line 134.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 134.
+LaTeX Font Info:    ... okay on input line 134.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 134.
+LaTeX Font Info:    ... okay on input line 134.
+Package hyperref Info: Link coloring OFF on input line 134.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -686,81 +686,100 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 \c@lstlisting=\count334
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Trying to load font information for OML+lmm on input line 123.
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 141.
  (/usr/share/texmf/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 123.
+LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 141.
  (/usr/share/texmf/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 123.
+LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 141.
  (/usr/share/texmf/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 123.
+(Font)              <12> on input line 141.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 123.
+(Font)              <8> on input line 141.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 123.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 123.
+(Font)              <6> on input line 141.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 141.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 123.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 141.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 <logo_unam.png, id=7, 1027.84pt x 1155.31625pt>
 File: logo_unam.png Graphic file (type png)
 <use logo_unam.png>
-Package pdftex.def Info: logo_unam.png  used on input line 124.
+Package pdftex.def Info: logo_unam.png  used on input line 142.
 (pdftex.def)             Requested size: 85.35826pt x 95.93529pt.
-LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line 128.
+LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line 146.
  (/usr/share/texmf/tex/latex/lm/ot1lmtt.fd
 File: ot1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 <logo_fi.png, id=9, 518.93875pt x 615.29875pt>
 File: logo_fi.png Graphic file (type png)
 <use logo_fi.png>
-Package pdftex.def Info: logo_fi.png  used on input line 130.
+Package pdftex.def Info: logo_fi.png  used on input line 148.
 (pdftex.def)             Requested size: 81.09052pt x 96.14018pt.
  [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc} <./logo_unam.png> <./logo_fi.png>]
-File: logo_fi.png Graphic file (type png)
-<use logo_fi.png>
-Package pdftex.def Info: logo_fi.png  used on input line 236.
-(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
- [2]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 247.
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 234.
  (/usr/share/texmf/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
+LaTeX Font Info:    Font shape `OT1/lmtt/bx/n' in size <12> not available
+(Font)              Font shape `OT1/lmtt/b/n' tried instead on input line 238.
 File: logo_fi.png Graphic file (type png)
 <use logo_fi.png>
-Package pdftex.def Info: logo_fi.png  used on input line 252.
+Package pdftex.def Info: logo_fi.png  used on input line 245.
 (pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
- [3{/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}] (./Proyecto_final.aux)
+ [2{/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}] (./codigo1.tex (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2023/02/27 1.9 listings language file
+) (/usr/share/texlive/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
+)
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 2.
+LaTeX Font Info:    Font shape `OT1/lmtt/bx/n' in size <10.95> not available
+(Font)              Font shape `OT1/lmtt/b/n' tried instead on input line 3.
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 31.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [3])
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 255.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [4]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 266.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [5] (./Proyecto_final.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 26151 strings out of 476047
- 478554 string characters out of 5792075
- 1937975 words of memory out of 5000000
- 47746 multiletter control sequences out of 15000+600000
- 587624 words of font info for 61 fonts, out of 8000000 for 9000
+ 26726 strings out of 476047
+ 484699 string characters out of 5792075
+ 2073975 words of memory out of 5000000
+ 48265 multiletter control sequences out of 15000+600000
+ 596688 words of font info for 65 fonts, out of 8000000 for 9000
  85 hyphenation exceptions out of 8191
- 89i,15n,93p,594b,476s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt12.pfb>
-Output written on Proyecto_final.pdf (3 pages, 379491 bytes).
+ 89i,16n,93p,794b,2233s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/type1/public/lm/lmbxi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr6.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texmf/fonts/type1/public/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/lmtk10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt12.pfb>
+Output written on Proyecto_final.pdf (5 pages, 479028 bytes).
 PDF statistics:
- 103 PDF objects out of 1000 (max. 8388607)
- 80 compressed objects within 1 object stream
- 18 named destinations out of 1000 (max. 500000)
- 63 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 195 PDF objects out of 1000 (max. 8388607)
+ 161 compressed objects within 2 object streams
+ 63 named destinations out of 1000 (max. 500000)
+ 87 words of extra memory for PDF output out of 10000 (max. 10000000)
 

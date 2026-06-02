@@ -13,8 +13,8 @@ volatile int activo    = 1;
 volatile int escribe   = 0; 
 volatile int regresa   = 0; 
 
-int PUERTO = 4000; 
-char DIRECTION[] = "127.0.0.1"; 
+int PUERTO = 4000; // El puerto que usamos nosotros
+char DIRECTION[] = "127.0.0.1"; // No se cambia la ip de nuestra compu
 
 Mensaje interfaz;
 Mensaje externo;
@@ -25,10 +25,10 @@ void conexion(Tuberia *local)
 
     printf("[HIJO] Inicializando los 4 hilos (Sockets y Pipes)...\n");
 
-    if (pthread_create(&servidor, NULL, hilo_lector_p2p, (void *)local) != 0) { exit(1); }
-    if (pthread_create(&escritor, NULL, hilo_escritor_p2p, NULL) != 0) { exit(1); }
-    if (pthread_create(&pipe_lector, NULL, hilo_lector_pipe, (void *)local) != 0) { exit(1); }
-    if (pthread_create(&pipe_escritor, NULL, hilo_escritor_pipe, (void *)local) != 0) { exit(1); }
+    pthread_create(&servidor, NULL, hilo_lector_p2p, (void *)local);
+    pthread_create(&escritor, NULL, hilo_escritor_p2p, NULL);
+    pthread_create(&pipe_lector, NULL, hilo_lector_pipe, (void *)local);
+    pthread_create(&pipe_escritor, NULL, hilo_escritor_pipe, (void *)local);
 
     pthread_join(servidor, NULL);
     pthread_join(escritor, NULL);
@@ -98,7 +98,7 @@ void *hilo_escritor_p2p(void *arg)
             enviar_msj(interfaz.ip_destino, interfaz.puerto_destino, interfaz);
             printf("Hilo envio mensaje a %d...\n", interfaz.puerto_destino);
         }
-        usleep(10000); 
+        usleep(1000); 
     }
     pthread_exit(NULL);
 }
@@ -140,7 +140,7 @@ void *hilo_escritor_pipe(void *arg)
             regresa = 0;
             write(local->A[1], &externo, sizeof(Mensaje));
         }
-        usleep(10000); 
+        usleep(1000); 
     }
     close(local->A[1]);
     pthread_exit(NULL);

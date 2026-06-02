@@ -5,8 +5,6 @@
 #include <pthread.h>
 #include "header.h"
 
-#define TAM_MAX 1024
-
 // Variables de control exclusivas para los hilos de la GUI
 volatile int gui_activo = 1;
 volatile int gui_escribe = 0;
@@ -16,9 +14,9 @@ Mensaje msg_para_enviar;
 Mensaje msg_recibido_pipe;
 
 // Datos de la conexion del amigo
-int puerto_amigo = 4001;
-char dir_amigo[] = "127.0.0.1";
-int puerto_actual = 4000; 
+int puerto_amigo = 4001;  // El puerto amigo que usa para escuchar
+char dir_amigo[] = "127.0.0.1"; // Esto se cambia por la ip del amigo
+int puerto_actual = 4000; // Nuestro puerto actual para mostrarlo en la interfaz
 
 GtkWidget *caja_mensajes; 
 GtkAdjustment *adj_chat; 
@@ -102,7 +100,7 @@ void *hilo_escritor_gui(void *arg) {
             write(local->B[1], &msg_para_enviar, sizeof(Mensaje));
             gui_escribe = 0; // Apagamos la bandera tras escribir
         }
-        usleep(10000); // Evita consumo innecesario de CPU (10ms)
+        usleep(1000); // Evita consumo innecesario de CPU (10ms)
     }
     printf("[GUI-HILO-ESCRITOR] Saliendo del hilo escritor de la interfaz.\n");
     pthread_exit(NULL);

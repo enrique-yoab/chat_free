@@ -23,19 +23,6 @@
 \usepackage{algpseudocode}
 \usepackage{setspace}
 
-% Traducción a español
-\algrenewcommand\algorithmicprocedure{\textbf{Procedimiento}}
-\algrenewcommand\algorithmicif{\textbf{Si}}
-\algrenewcommand\algorithmicthen{\textbf{Entonces}}
-\algrenewcommand\algorithmicelse{\textbf{Sino}}
-\algrenewcommand\algorithmicend{\textbf{Fin}}
-\algrenewcommand\algorithmicfor{\textbf{Para}}
-\algrenewcommand\algorithmicwhile{\textbf{Mientras}}
-\algrenewcommand\algorithmicdo{\textbf{Hacer}}
-\algrenewcommand\algorithmicreturn{\textbf{Salir}}
-\algrenewcommand\algorithmicrepeat{\textbf{Repetir}}
-\algrenewcommand\algorithmicuntil{\textbf{Hasta que}}
-
 \renewcommand{\baselinestretch}{1.1} % 1.3 equivale aproximadamente a un interlineado de 1.5
 
 % Configuración para quitar "Listing #:"
@@ -60,10 +47,41 @@
     keepspaces=true,
     columns=flexible,
     xleftmargin=20pt,
-    morekeywords={NULL, sendto, recvfrom, bzero, printf, close, exit, perror, strlen, memset, bind,
-                typedef, struct},
+    morekeywords={NULL, sendto, recvfrom, bzero, printf, close, exit, perror, strlen, memset, memcpy, bind, typedef, struct, pthread_create, pthread_join, sleep, usleep, read, rand, srand, strcmp, sprintf, write, Mensaje, Info, nodoP2P, colaP2P, tiempo, p2p, hilo_escucha, wait, enviar_msj, getpid, fclose, fprintf, snprintf, fopen, FILE, setsockopt, AF_INET, SOCK_DGRAM, INADDR_ANY, htons, inet_pton, socket, listen, accept, send, connect, convertir_hora, convertion_ms, convertir_tiempo, capturar_tiempo, encolarP2P, desencolarP2P, free},
     extendedchars=true,
+    % Se añaden los signos de exclamación e interrogación invertidos:
     literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1
+             {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {Ñ}{{\~N}}1
+             {¡}{{\exclamdown}}1 {¿}{{\questiondown}}1
+}
+
+\lstdefinestyle{estiloPseudo}{
+    language={}, % Se deja vacío para que no use las palabras clave de C
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{purple}\bfseries, % Color distintivo para palabras clave
+    commentstyle=\color{gray}\itshape,    % Comentarios en gris e itálica
+    stringstyle=\color{teal},             % Cadenas de texto en color cerceta/azul-verde
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    rulecolor=\color{black},
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=4,
+    keepspaces=true,
+    columns=flexible,
+    xleftmargin=20pt,
+    % Palabras clave típicas de pseudocódigo en español:
+    morekeywords={ Inicio, Fin, Algoritmo, Funcion, Proceso, FinProceso, Si, Entonces, Sino, FinSi, Segun, Hacer, Caso, DeOtroModo, FinSegun, Mientras, FinMientras, Repetir, Hasta, Que, Para, Hasta, Con, Paso, FinPara, Escribir, Leer, Imprimir, Mostrar, Retornar, Devuelve, Verdadero, Falso, Entero, Real, Cadena, Booleano, Caracter, Procedimiento, AS, Estructura, Devolver, Constante, Enumeracion
+    },
+    sensitive=false, % Para que no distinga estrictamente entre mayúsculas y minúsculas
+    extendedchars=true,
+    % Se mantienen los acentos y símbolos en español:
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1
+             {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {Ñ}{{\~N}}1
+             {¡}{{\exclamdown}}1 {¿}{{\questiondown}}1
 }
 
 % --- Configuración de los cuadros (Estilo idéntico al documento) ---
@@ -123,7 +141,7 @@
 \begin{tabular}{m{3.5cm} m{9cm} m{3.5cm}}
     \includegraphics[width=3cm]{logo_unam.png} & 
     \centering
-    \textcolor[rgb]{0.2, 0.4, 0.6}{\textbf{\large Práctica 2. Sockets}} \\
+    \textcolor[rgb]{0.2, 0.4, 0.6}{\textbf{\large Proyecto Final}} \\[0.1cm]
     \small Prof Carmen Lucia Bustillo Hernández \\
     \texttt{\small carmenbustillohernandez@gmail.com} & 
     \centering
@@ -137,27 +155,26 @@
     {\large Facultad de Ingeniería} \\
     \textbf{Asignatura: Sistemas Distribuidos} \\
     Universidad Nacional Autónoma de México \\
-    Fecha de Entrega: 9 de Abril de 2026
+    Fecha de Entrega: 21 de Mayo de 2026
 \end{center}
 
 % --- Cuadro: Datos de Alumno ---
-\begin{tcolorbox}[estilo_practica]
-    \begin{center}
-        \textbf{Datos del Alumno}
-    \end{center}
-    \begin{flushleft}
-        \textbf{Nombre:} Enrique Yoab Cortez Rios \\ 
-        \textbf{Matrícula:} 317302992
-    \end{flushleft}
-    \vspace{0.1cm}
-\end{tcolorbox}
+\begin{center}
+\begin{flushleft}
+    \textbf{Nombre:} Enrique Yoab Cortez Rios \\ [0.2cm]
+    \textbf{Matrícula:} 317302992 \\ [0.2cm]
+    \textbf{Nombre:} Mario Mendoza Gonzáles\\ [0.2cm]
+    \textbf{Matrícula:} 316284828
+\end{flushleft}
+\vspace{0.1cm}
+\end{center}
 
 % --- Cuadro: Objetivo General ---
 \begin{tcolorbox}[estilo_practica]
     \begin{center}
         \textbf{Objetivo General}
     \end{center}
-    \centering \small El alumno comprenderá el funcionamiento de los diferentes algoritmos de exclusión mutua para sistemas distribuidos e implementará los mismos mediante simulaciones utilizando procesos e hilos o sockets respectivamente.
+    \centering \small El alumno comprenderá y aplicará los mecanismos de intercomunicación de procesos y concurrencia a bajo nivel mediante el desarrollo de una aplicación distribuida peer-to-peer con interfaz gráfica.
 \end{tcolorbox}
 
 % --- Cuadro: Objetivos Específicos ---
@@ -166,7 +183,7 @@
         \textbf{Objetivos Específicos}
     \end{center}
     \begin{enumerate}
-        \item Implementar la simulación de algorítmos de exclusión mutua en sistemas distribuidos.
+        \item Diseñar e implementar una aplicación tipo chat (messenger) multiplataforma utilizando programación visual.
     \end{enumerate}
     \vspace{0.1cm}
 \end{tcolorbox}
@@ -201,8 +218,8 @@
 \section{\large 1. Instrucciones Generales}
 
 \begin{enumerate}
-    \item Realizar cada uno de los problemas prácticos con las indicaciones que se solicitan.
-    \item Para cada uno de los problemas, desarrolle su diagrama de flujo y pseudocódigo respectivamente.
+    \item Realizar el proyecto con las indicaciones que se solicitan.
+    \item Para el proyecto, desarrolle su diagrama de flujo y pseudocódigo respectivamente.
 \end{enumerate}
 
 \section{\large 2. Criterios de Evaluación}
@@ -211,42 +228,39 @@
     \item Se evaluará de acuerdo con los Criterios de Evaluación que se encuentra en el Google Classroom de la asignatura.
 \end{enumerate}
 
-\section{\large 3. Problemas}
-% Primer archivo de codigo principal de Lamport
-% \input{Lamport1.tex}
-% % Segundo archivo de codigo conexion p2p
-% \input{Lamport2.tex}
-% % Tercer archivo que tiene el pseudocodigo de lamport
-% \input{Pseudo_Lamp.tex}
-% % Cuarto archivo ejecucion de lamport
-% \input{ejecucion_lamp.tex}
-% % Quintpo archivo que contiene el codigo principal de vectores
-% \input{Vectorial1.tex}
-% % Sexto archivo que contiene el pseudocododifgo de vectores
-% \input{Pseudo_Vector.tex}
-% % Septimo achivo ejecucion de vectoriales
-% \input{ejecucion_vecto.tex}
-% % Octavo archivo que tiene el codigo principal de cristian
-% \input{Cristian1.tex}
-% % Noveno archivo que contiene el pseudocodigo de cristian
-% \input{Pseudo_Cristian.tex}
-% % Decimo archivo ejecucion de cristian
-% \input{ejecucion_cris.tex}
+\section{\large 3. Observaciones Previas}
+
+\begin{itemize}
+    \item \textbf{Número de Procesos:} El sistema requiere la bifurcación de dos procesos independientes mediante la directiva \texttt{fork()}. El proceso hijo actúa como el \textit{backend}, encargándose de gestionar el tráfico de red en tiempo real a través de una arquitectura \textit{peer-to-peer} (P2P) basada en sockets TCP/IP. El proceso padre opera como el \textit{frontend}, administrando el bucle principal de la interfaz gráfica de usuario (\texttt{GUI}) y capturando las interacciones del usuario mediante la biblioteca \texttt{GTK}.
+    
+    \item \textbf{Cantidad de Tuberías:} Se implementan dos tuberías unidireccionales (\texttt{pipes}) interconectadas de forma cruzada para establecer un canal de comunicación dúplex completo (\textit{Full-Duplex}) entre ambos procesos. Este mecanismo de comunicación entre procesos (\textit{IPC}) es fundamental para el intercambio asíncrono de estructuras de datos tipo \texttt{Mensaje} entre la lógica de red y la interfaz visual.
+    
+    \item \textbf{Hilos de Ejecución (\texttt{pthreads}):} La concurrencia interna se gestiona mediante hilos especializados para evitar bloqueos en el flujo de datos:
+    \begin{itemize}
+        \item \textbf{Proceso de Red (\textit{Backend}):} Consta de 4 hilos distribuidos de la siguiente manera: un hilo servidor bloqueante para la escucha y aceptación de conexiones entrantes, un hilo escritor orientado a la transmisión de datos hacia el nodo remoto, un hilo lector síncrono asignado a la recepción del pipe proveniente de la \texttt{GUI} y un hilo escritor dedicado a canalizar los mensajes de red entrantes hacia la interfaz gráfica.
+        \item \textbf{Proceso Gráfico (\textit{Frontend}):} Implementa únicamente 2 hilos asíncronos dedicados de forma exclusiva a las tareas de lectura y escritura sobre las tuberías compartidas, garantizando que la renderización de la interfaz no sufra retardos.
+    \end{itemize}
+\end{itemize}
 
 \newpage
-\section{Conclusiónes}
-
-El desarrollo de esta práctica resultó un verdadero reto, principalmente por la necesidad de establecer conexiones P2P y Cliente-Servidor para gestionar distintos algoritmos de sincronización de manera simultánea. Al final, se demostró que estos algoritmos pueden integrarse exitosamente en múltiples procesos, adaptándose a las necesidades de diferentes arquitecturas de red.
-
-Este proyecto me permitió observar de primera mano cómo operan las aplicaciones a bajo nivel. Demostró la importancia vital de mantener un control absoluto sobre los procesos creados (\texttt{forks} e hilos), garantizando su correcta sincronización para evitar problemas lógicos, de concurrencia o de latencia.
-
-Se logró implementar una comunicación efectiva mediante sockets TCP y UDP; sin embargo, esto representa un desafío constante para el programador. Al ser la base sobre la cual opera toda aplicación de red, su complejidad exige un diseño sumamente estructurado. Quedó claro que es imposible comprender, modificar o escalar un sistema distribuido si no se cuenta con un control de ejecución riguroso y una documentación estricta sobre el ciclo de vida de cada proceso.
-
-\section{Referencias}
+\section{\large 4. Desarrollo del Proyecto}
+\subsection{Archivo de Cabecera \texttt{(header.h)}}
+Este archivo contiene las declaraciones de las estructuras de datos y la definción de las funciones utilizadas para la implementación del proyecto. 
 \begin{itemize}
-    \item CRUD - Glosario de MDN Web Docs | MDN. (s. f.). \url{https://developer.mozilla.org/es/docs/Glossary/CRUD}
+    \item \textbf{Estructura de Datos:} Se definen 2 estructuras principales; \texttt{Mensaje} y \texttt{TipoMensaje}. La primera encapsula la información relevante de cada mensaje, el id del proceso que lo envía, el contenido del mensaje, la IP y el puerto del nodo remoto, así como el tipo de mensaje que se está transmitiendo. La segunda estructura, es un enumerado que categoriza los mensajes en tres tipos; \texttt{ENVIO}, \texttt{RECIBIDO} y \texttt{SALIDA}, lo que permite una gestión eficiente de los flujos de datos y la lógica de control entre ambos procesos.
+\end{itemize}
+\input{codigo1.tex}
+% Debemos agregar el codigo en otro archivo latex
+
+\newpage
+\section{\large Conclusión}
+Aqui va conclusion
+\section{\large Referencias}
+\begin{itemize}
     \item Amazon Web Services. (s. f.). ¿Qué es un cliente ligero? Amazon Web Services, Inc. \url{https://aws.amazon.com/es/what-is/thin-client/}
     \item Amazon Web Services. (s. f.-b). Qué es una CLI (interfaz de la línea de comandos)? Amazon Web Services, Inc. Amazon Web Services. (s. f.-b). Qué es una CLI (interfaz de la línea de comandos)? Amazon Web Services, Inc. \url {https://aws.amazon.com/es/what-is/cli}
+    \item Velázquez, D. (2022, 22 enero). Exclusión mutua , Sistemas Operativos , WebProgramacion Consultoría Informática. WebProgramacion Consultoría Informática. \url{https://webprogramacion.com/exclusion-mutua/}
+    \item Oporto Díaz, S. (s.f.). Material Adicional (SOSD – Mod 4): Concurrencia. Exclusión mutua y sincronización [PDF]. Departamento de Ciencias e Ingeniería de la Computación, Universidad Nacional del Sur. \url{https://cs.uns.edu.ar/~gd/soyd/clases/04-SincronizacionExtras.pdf}
 \end{itemize}
 
 \end{document}
