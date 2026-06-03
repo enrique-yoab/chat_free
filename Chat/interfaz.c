@@ -5,246 +5,296 @@
 #include <pthread.h>
 #include "header.h"
 
-// Variables de control exclusivas para los hilos de la GUI
+// Variables de control exclusivas para regular el ciclo de vida de los hilos de la GUI
 volatile int gui_activo = 1;
+// Bandera volatil para notificar que el usuario presiono enviar y hay datos listos para el pipe B
 volatile int gui_escribe = 0;
 
-// Buffers para la sincronización de la GUI
+// Buffers globales estructurados para la transferencia asincrona de informacion en la GUI
 Mensaje msg_para_enviar;
 Mensaje msg_recibido_pipe;
 
-// Datos de la conexion del amigo
-int puerto_amigo = 4001;        // El puerto amigo que usa para escuchar
-char dir_amigo[] = "127.0.0.1"; // Esto se cambia por la ip del amigo
-int puerto_actual = 4000;       // Nuestro puerto actual para mostrarlo en la interfaz
+// Parametros de configuracion de red por defecto para el nodo remoto (amigo)
+int puerto_amigo = 4001;        // El puerto en el que el otro extremo escucha conexiones
+char dir_amigo[] = "127.0.0.1"; // Direccion IP del nodo remoto (mapeada localmente por defecto)
+int puerto_actual = 4000;       // Puerto asignado a nuestra instancia para desplegarlo en la cabecera
 
+// Componentes globales de GTK requeridos para la manipulacion de la vista desde multiples funciones
 GtkWidget *caja_mensajes;
 GtkAdjustment *adj_chat;
 char buffer[TAM_MAX];
 
+// Puntero de referencia global para interactuar con los descriptores de la tuberia principal IPC
 Tuberia *gui_pipe_ref;
 
-
+// Funcion de callback de baja prioridad para ajustar la barra de desplazamiento de forma automatica
 static gboolean scroll_al_final(gpointer data)
 {
+    // Extraemos el limite superior maximo del area de scroll dinamicamente
     double max = gtk_adjustment_get_upper(adj_chat);
+    // Obtenemos las dimensiones proporcionales de la pagina visible actual
     double page = gtk_adjustment_get_page_size(adj_chat);
+    // Movemos el scroll al fondo absoluto restando el tamaño de la pagina visible al maximo alcanzado
     gtk_adjustment_set_value(adj_chat, max - page);
+    // Retornamos FALSE para indicarle al planificador de GLib que destruya este evento tras ejecutarse una vez
     return FALSE;
 }
 
+// Subrutina encargada de construir los elementos visuales (widgets) para representar los mensajes del chat
 static void añadir_burbuja(const char *texto, gboolean es_mio, long long tiempo_ms)
 {
-    // 1. Preparar la burbuja de texto
+    // 1. Instanciamos una etiqueta de GTK para alojar la cadena del mensaje enviado o recibido
     GtkWidget *burbuja = gtk_label_new(texto);
+    // Habilitamos el ajuste de linea automatico si el texto supera las dimensiones horizontales maximas
     gtk_label_set_line_wrap(GTK_LABEL(burbuja), TRUE);
+    // Configuramos que la ruptura de linea se haga por palabras y caracteres de forma limpia
     gtk_label_set_line_wrap_mode(GTK_LABEL(burbuja), PANGO_WRAP_WORD_CHAR);
+    // Establecemos una restriccion de diseño fijando el ancho maximo en 35 caracteres por fila
     gtk_label_set_max_width_chars(GTK_LABEL(burbuja), 35);
 
-    // 2. Preparar la etiqueta del tiempo
+    // 2. Declaramos y formateamos la cadena que mostrara la estampa de tiempo
     char str_tiempo[32];
     char markup_tiempo[128];
     formatear_tiempo_str(tiempo_ms, str_tiempo);
 
-    // Usamos markup para hacer la fuente más pequeña (font='8') y color gris
+    // Formateamos usando sintaxis Pango Markup para reducir la fuente (font='8') y conservar un color oscuro
     sprintf(markup_tiempo, "<span font='8' foreground='#000000'>%s</span>", str_tiempo);
     GtkWidget *label_tiempo = gtk_label_new(NULL);
+    // Inyectamos el formato enriquecido en la etiqueta correspondiente
     gtk_label_set_markup(GTK_LABEL(label_tiempo), markup_tiempo);
 
-    // Lo centramos verticalmente
+    // Alineamos verticalmente la etiqueta del tiempo al centro para mantener simetria visual
     gtk_widget_set_valign(label_tiempo, GTK_ALIGN_CENTER);
 
-    // 3. Empaquetar todo en la caja horizontal
+    // 3. Creamos un contenedor horizontal (HBox) para estructurar la linea del mensaje actual
     GtkWidget *alineacion = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    // Asignamos margenes externos a la burbuja para que no quede pegada a las paredes ni a otras burbujas
     gtk_widget_set_margin_start(burbuja, 15);
     gtk_widget_set_margin_end(burbuja, 15);
     gtk_widget_set_margin_top(burbuja, 5);
     gtk_widget_set_margin_bottom(burbuja, 5);
 
+    // Condicional para ramificar el diseño estilo Messenger dependiendo de la procedencia del mensaje
     if (es_mio)
     {
+        // Si es propio, alineamos todo el contenedor a la extrema derecha
         gtk_widget_set_halign(alineacion, GTK_ALIGN_END);
+        // Le asignamos el ID CSS "mi-mensaje" definido en v-boton.css (azul con bordes suavizados)
         gtk_widget_set_name(burbuja, "mi-mensaje");
 
-        // Mi mensaje: [Hora] [Burbuja de Texto]
+        // Estructuramos la distribucion: primero la estampa de tiempo, luego el texto a la derecha
         gtk_box_pack_start(GTK_BOX(alineacion), label_tiempo, FALSE, FALSE, 0);
         gtk_box_pack_start(GTK_BOX(alineacion), burbuja, FALSE, FALSE, 0);
     }
     else
     {
+        // Si proviene de la red, alineamos el contenedor a la extrema izquierda
         gtk_widget_set_halign(alineacion, GTK_ALIGN_START);
+        // Le asignamos el ID CSS "su-mensaje" definido en v-boton.css (rojo/guinda)
         gtk_widget_set_name(burbuja, "su-mensaje");
 
-        // Su mensaje: [Burbuja de Texto] [Hora]
+        // Estructuramos la distribucion: primero el texto, luego la estampa de tiempo a la derecha
         gtk_box_pack_start(GTK_BOX(alineacion), burbuja, FALSE, FALSE, 0);
         gtk_box_pack_start(GTK_BOX(alineacion), label_tiempo, FALSE, FALSE, 0);
     }
 
+    // Insertamos la fila estructurada dentro de la caja contenedora vertical del chat
     gtk_container_add(GTK_CONTAINER(caja_mensajes), alineacion);
+    // Forzamos el renderizado inmediato del nuevo componente y sus widgets secundarios
     gtk_widget_show_all(alineacion);
 
+    // Agregamos la rutina de autoscroll al bucle principal de eventos para ejecutarse en el proximo ciclo de ocio
     g_idle_add(scroll_al_final, NULL);
 }
 
-// FUNCION PARA EL HISTORIAL
+// Funcion para persistir de forma local e incremental la bitacora de conversacion
 void guardar_en_historial(const char *texto, gboolean es_mio, long long tiempo_ms) {
-    // Abrimos en modo "a" (append) para añadir al final sin borrar lo anterior
+    // Abrimos el archivo en modo "a" (append) para añadir nuevas lineas al final del documento sin sobreescribir
     FILE *archivo = fopen("historial_chat.txt", "a"); 
     if (archivo != NULL) {
-        // Guardamos formato: [1 o 0] | [Tiempo_ms] | [Texto]
+        // Almacenamos los datos serializados bajo el delimitador de tuberia: [Origen]|[Milisegundos]|[Texto]
         fprintf(archivo, "%d|%lld|%s\n", es_mio ? 1 : 0, tiempo_ms, texto);
+        // Cerramos el flujo del archivo para asegurar la descarga fisica de datos en el disco
         fclose(archivo);
     }
 }
 
-// Función auxiliar que ejecuta GTK de forma segura para pintar la burbuja remota
+// Callback intermedio invocado de forma segura por el hilo principal de GTK para procesar buffers remotos
 static gboolean mostrar_mensaje_recibido(gpointer data)
 {
-    // Usamos el tiempo calculado de Cristian que viene del pipe
+    // Construimos graficamente la burbuja correspondiente a la izquierda utilizando los datos del pipe
     añadir_burbuja(msg_recibido_pipe.texto, FALSE, msg_recibido_pipe.tiempo);
-    // Guardamos en el historial el mensaje recibido
+    // Respaldamos de forma permanente el mensaje remoto en el archivo de texto local
     guardar_en_historial(msg_recibido_pipe.texto, FALSE, msg_recibido_pipe.tiempo);
+    // Retornamos FALSE para liberar el callback del despachador principal de eventos
     return FALSE;
 }
 
-// funcion para cargar el historial previo al iniciar la ventana.
+// Subrutina invocada al arranque para reconstruir la sesion anterior a partir del archivo de historial
 void cargar_historial() {
-    FILE *archivo = fopen("historial_chat.txt", "r"); // "r" para lectura
-    if (archivo == NULL) return; // Si no existe el archivo, no hacemos nada
+    // Abrimos el archivo en modo lectura estricta
+    FILE *archivo = fopen("historial_chat.txt", "r"); 
+    // Si el archivo no existe en el directorio, abortamos la operacion limpiamente sin lanzar excepciones
+    if (archivo == NULL) return; 
 
     char linea[TAM_MAX + 100]; 
+    // Leemos secuencialmente linea por linea hasta llegar al final del archivo de texto
     while (fgets(linea, sizeof(linea), archivo) != NULL) {
-        // Quitamos el salto de línea del final que deja fgets
+        // Removemos de forma segura el caracter de salto de linea '\n' remanente de fgets
         linea[strcspn(linea, "\n")] = 0;
 
         int es_mio = 0;
         long long tiempo_ms = 0;
         char texto[TAM_MAX] = {0};
 
-        // Extraemos los datos separados por '|'
+        // Encontramos el primer token de division '|' correspondiente al bit de procedencia
         char *ptr1 = strchr(linea, '|');
         if (ptr1) {
-            *ptr1 = '\0';
-            es_mio = atoi(linea); // Obtenemos el 1 o 0
+            *ptr1 = '\0'; // Dividimos la cadena temporalmente introduciendo un terminador nulo
+            es_mio = atoi(linea); // Convertimos el fragmento ASCII a entero ordinario (0 o 1)
             
+            // Encontramos el segundo token correspondiente al timestamp en milisegundos
             char *ptr2 = strchr(ptr1 + 1, '|');
             if (ptr2) {
-                *ptr2 = '\0';
-                tiempo_ms = atoll(ptr1 + 1); // Obtenemos los milisegundos
-                strcpy(texto, ptr2 + 1);     // Obtenemos el texto completo
+                *ptr2 = '\0'; // Dividimos el fragmento final
+                tiempo_ms = atoll(ptr1 + 1); // Convertimos la cadena de texto a entero largo de 64 bits (long long)
+                strcpy(texto, ptr2 + 1);     // Extraemos el texto integro restante del mensaje
                 
-                // Pintamos la burbuja directamente en la interfaz
+                // Pintamos la burbuja retrospectivamente preservando si era local o remota
                 añadir_burbuja(texto, es_mio == 1 ? TRUE : FALSE, tiempo_ms);
             }
         }
     }
+    // Cerramos el descriptor de lectura una vez concluida la carga inicial
     fclose(archivo);
 }
 
-// === FUNCION PARA LIMPIAR EL HISTORIAL ===
+// Callback de evento activado al pulsar el boton "Limpiar"
 static void limpiar_historial_pulsado(GtkWidget *widget, gpointer data)
 {
-    // 1. Vaciamos el archivo de texto abriéndolo en modo "w" (write)
+    // 1. Truncamos y vaciamos por completo el archivo de historial abriendolo en modo escritura "w"
     FILE *archivo = fopen("historial_chat.txt", "w");
     if (archivo != NULL) {
-        fclose(archivo);
+        fclose(archivo); // Al cerrarse de inmediato, el archivo queda vacio con 0 bytes
     }
 
-    // 2. Destruimos todos los widgets (burbujas) dentro de la caja de mensajes
+    // 2. Iteramos sobre cada widget hijo contenido en la caja de mensajes y lo destruimos fisicamente
     gtk_container_foreach(GTK_CONTAINER(caja_mensajes), (GtkCallback)gtk_widget_destroy, NULL);
     
+    // Desplegamos bitacora de control en consola
     printf("[GUI] Historial limpiado.\n");
 }
 
-// === FUNCION DE PULSACION DEL BOTON DE ENVIO ===
+// Callback invocado cuando el usuario hace clic en el boton Enviar o presiona Enter en la entrada de texto
 static void boton_pulsado(GtkWidget *widget, gpointer data)
 {
     GtkEntry *entry = GTK_ENTRY(data);
+    // Recuperamos el buffer de texto plano de la caja de entrada de GTK
     const char *texto = gtk_entry_get_text(entry);
 
-    // Sólo enviamos si el texto no est[a vacio
+    // Proteccion elemental: solo procesamos la entrada si contiene caracteres validos
     if (strlen(texto) > 0)
     {
-        // Capturamos nuestro propio tiempo local en ms para mostrarlo
+        // Registramos inmediatamente el tiempo del sistema en milisegundos para estampar la operacion
         long long mi_tiempo = get_time_ms();
+        // Agregamos la representacion grafica del mensaje propio apuntando a la derecha
         añadir_burbuja(texto, TRUE, mi_tiempo);
 
-        // Guardamos en el historial el mensaje
+        // Almacenamos localmente el mensaje en la bitacora persistente
         guardar_en_historial(texto, TRUE, mi_tiempo);
 
-        // Colocamos los datos en el buffer de envío de la GUI
-        msg_para_enviar.id_emisor = getpid();
-        msg_para_enviar.tipo = ENVIO;
+        // Empaquetamos y serializamos los datos crudos en la estructura Mensaje para su transmision IPC
+        msg_para_enviar.id_emisor = getpid(); // Identificador unico del proceso emisor (Frontend)
+        msg_para_enviar.tipo = ENVIO;         // Clasificamos la operacion como un mensaje de salida
         strncpy(msg_para_enviar.texto, texto, sizeof(msg_para_enviar.texto) - 1);
         strncpy(msg_para_enviar.ip_destino, dir_amigo, sizeof(msg_para_enviar.ip_destino) - 1);
         msg_para_enviar.puerto_destino = puerto_amigo;
-        msg_para_enviar.tiempo = get_time_ms(); // Tiempo en el que envio mi mensaje
+        msg_para_enviar.tiempo = mi_tiempo;   // Guardamos el timestamp sincronizado para la transmision
 
-        // Activamos la bandera para que el hilo escritor de la GUI despache el mensaje
+        // Alzamos la bandera volatil para desbloquear la ejecucion del hilo escritor de la interfaz
         gui_escribe = 1;
 
+        // Vaciamos la caja de texto para dejarla disponible para el proximo mensaje
         gtk_entry_set_text(entry, "");
     }
 }
 
+// Manejador del evento de destruccion de la ventana (Cierre de la aplicacion)
 static void ventana_destruida(GtkWidget *widget, gpointer data)
 {
     printf("[GUI] Cerrando ventana. Enviando señal de apagado...\n");
 
+    // Preparamos un mensaje de control especial inyectando -1 en el emisor
     msg_para_enviar.id_emisor = -1;
     msg_para_enviar.tipo = SALIDA;
     strncpy(msg_para_enviar.texto, "Cierre de interfaz.", sizeof(msg_para_enviar.texto) - 1);
-
+    
+    // Forzamos una escritura bloqueante sincrona en el pipe B hacia el backend para ordenar su apagado masivo
     write(gui_pipe_ref->B[1], &msg_para_enviar, sizeof(Mensaje));
-
-    gui_escribe = 0; // <-- Asegura que el escritor de la GUI no intente escribir duplicado
-    gui_activo = 0;  // <-- Apaga los hilos de la interfaz de inmediato
+    
+    // Bajamos las banderas globales de control para romper los ciclos infinitos de los hilos remanentes
+    gui_escribe = 0; 
+    gui_activo = 0; 
+    
+    // Rompemos el bucle principal de GTK para devolver la ejecucion al hilo principal
     gtk_main_quit();
 }
 
+// Cargador e interprete del archivo de diseño en cascada CSS para GTK
 void cargar_css(void)
 {
+    // Instanciamos un proveedor de estilos CSS para GTK
     GtkCssProvider *provider = gtk_css_provider_new();
+    // Recuperamos la pantalla por defecto asignada al entorno grafico actual
     GdkDisplay *display = gdk_display_get_default();
     GdkScreen *screen = gdk_display_get_default_screen(display);
+    
+    // Leemos e interpretamos los selectores declarados en "v-boton.css"
     gtk_css_provider_load_from_path(provider, "v-boton.css", NULL);
-    gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    // Aplicamos los estilos de forma global a la pantalla con prioridad de aplicacion para sobreescribir temas nativos
+    gtk_css_provider_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    // Decrementamos el contador de referencias del proveedor para liberar memoria limpia
     g_object_unref(provider);
 }
 
-// === HILO 1 DE LA GUI: Lector dedicado del Pipe A ===
+// === HILO 1 DE LA GUI: Lector dedicado en segundo plano para el Pipe A ===
 void *hilo_lector_gui(void *arg)
 {
     Tuberia *local = (Tuberia *)arg;
     printf("[GUI-HILO-LECTOR] Hilo de lectura de pipe iniciado...\n");
 
+    // Se ejecutara de fondo mientras dure la sesion grafica sin interrumpir los hilos de render
     while (gui_activo)
     {
         Mensaje temporal;
-        // Se queda bloqueado aquí de forma segura sin congelar la ventana de GTK
+        // Operacion bloqueante a nivel de Kernel: espera paquetes provenientes del backend en el pipe A[0]
         int bytes = read(local->A[0], &temporal, sizeof(Mensaje));
 
+        // Validamos que se hayan extraido bytes coherentes y la interfaz siga en estado activo
         if (bytes > 0 && gui_activo)
         {
+            // Si el mensaje entrante fue catalogado por el backend como una RECEPCION de red
             if (temporal.tipo == RECEPCION)
             {
                 printf("Recibi mensaje de la conexion...\n");
-                // Copiamos al buffer interno de la GUI
+                // Mapeamos los datos de forma segura en la estructura global dedicada a la GUI
                 memcpy(&msg_recibido_pipe, &temporal, sizeof(Mensaje));
-                // Le pedimos a GTK que pinte de forma segura desde su hilo principal
+                // Delegamos de forma asincrona e indolora la insercion grafica en el hilo principal de GTK
                 g_idle_add(mostrar_mensaje_recibido, NULL);
             }
         }
         else
         {
+            // Si el descriptor es cerrado o da error, rompemos el ciclo de ejecucion de forma inmediata
             break;
         }
     }
     printf("[GUI-HILO-LECTOR] Saliendo del hilo lector de la interfaz.\n");
+    // Terminamos de forma limpia e independiente la existencia de este hilo
     pthread_exit(NULL);
 }
 
-// === HILO 2 DE LA GUI: Escritor dedicado en el Pipe B ===
+// === HILO 2 DE LA GUI: Escritor dedicado en segundo plano para canalizar en el Pipe B ===
 void *hilo_escritor_gui(void *arg)
 {
     Tuberia *local = (Tuberia *)arg;
@@ -252,45 +302,59 @@ void *hilo_escritor_gui(void *arg)
 
     while (gui_activo)
     {
+        // Evaluamos de forma constante mediante sondeo (polling) el estado de la bandera de salida
         if (gui_escribe == 1)
         {
+            // Despachamos la estructura serializada por el pipe B para que el modulo de red lo procese
             write(local->B[1], &msg_para_enviar, sizeof(Mensaje));
-            gui_escribe = 0; // Apagamos la bandera tras escribir
+            // Apagamos la señal inmediatamente para evitar reenvios duplicados
+            gui_escribe = 0; 
         }
-        usleep(1000); // Evita consumo innecesario de CPU (10ms)
+        // Dormimos el hilo durante 1 milisegundo para evitar que el bucle vacio consuma el 100% de un nucleo del CPU
+        usleep(1000); 
     }
     printf("[GUI-HILO-ESCRITOR] Saliendo del hilo escritor de la interfaz.\n");
     pthread_exit(NULL);
 }
 
+// Inicializador maestro de la interfaz grafica de usuario
 void interfaz_grafica(int argc, char *argv[], Tuberia *padre)
 {
+    // Descriptores internos para almacenar la configuracion geometrica y jerarquica de los componentes de GTK
     GtkWidget *window, *box, *entry, *scrolled_window, *hbox, *button, *header_box, *info_contacto;
     pthread_t gui_lector, gui_escritor;
 
+    // Resguardamos localmente la direccion de memoria del canal de pipes cruzados
     gui_pipe_ref = padre;
 
+    // Inicializamos el entorno basico de GTK abstrayendo los argumentos de linea de comandos
     gtk_init(&argc, &argv);
+    // Inyectamos las hojas de estilo personalizadas estilo Messenger retro-futurista
     cargar_css();
 
-    // --- LEVANTAR LOS HILOS DE LA INTERFAZ para comunicarse con el back-end ---
+    // --- CONCURRENCIA: LEVANTAR LOS DOS HILOS INDEPENDIENTES DE LA GUI ---
     pthread_create(&gui_lector, NULL, hilo_lector_gui, (void *)gui_pipe_ref);
     pthread_create(&gui_escritor, NULL, hilo_escritor_gui, (void *)gui_pipe_ref);
 
+    // Construimos la ventana principal y definimos sus atributos generales
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "MSN P2P - INTERFAZ");
     gtk_window_set_default_size(GTK_WINDOW(window), 450, 650);
 
+    // Vinculamos la señal de destruccion fisica de la ventana al callback de control ventana_destruida
     g_signal_connect(window, "destroy", G_CALLBACK(ventana_destruida), NULL);
 
+    // Contenedor base vertical que apilara la cabecera, la caja de texto y la seccion de entrada
     box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(window), box);
 
+    // --- DISEÑO DE LA CABECERA (Header estilo MSN) ---
     header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_widget_set_name(header_box, "header-messenger");
     gtk_box_pack_start(GTK_BOX(box), header_box, FALSE, FALSE, 0);
     info_contacto = gtk_label_new(NULL);
 
+    // Redactamos el banner informativo inyectando etiquetas con formato enriquecido mediante snprintf
     snprintf(buffer, sizeof(buffer),
              "<span font='11' weight='bold' foreground='#003399'>MESSENGER P2P</span>\n"
              "<span font='9' foreground='#666'>Escucha: %d - Conectado</span>",
@@ -299,22 +363,24 @@ void interfaz_grafica(int argc, char *argv[], Tuberia *padre)
     gtk_label_set_markup(GTK_LABEL(info_contacto), buffer);
     gtk_box_pack_start(GTK_BOX(header_box), info_contacto, FALSE, FALSE, 15);
 
-    // --- NUEVO BOTÓN DE LIMPIEZA ---
+    // --- COMPONENTE COMPLEMENTARIO: BOTON DE LIMPIEZA DE BITACORA ---
     GtkWidget *btn_limpiar = gtk_button_new_with_label("Limpiar");
     g_signal_connect(btn_limpiar, "clicked", G_CALLBACK(limpiar_historial_pulsado), NULL);
-    
-    // Usamos pack_end para que el botón se vaya a la extrema derecha del header
+    // Empaquetamos el boton al final (pack_end) para arrastrarlo al extremo derecho de la cabecera
     gtk_box_pack_end(GTK_BOX(header_box), btn_limpiar, FALSE, FALSE, 15);
-    // -------------------------------
 
+    // --- COMPONENTE DE DESPLAZAMIENTO (Scrolled Window) ---
     scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_box_pack_start(GTK_BOX(box), scrolled_window, TRUE, TRUE, 0);
+    // Extraemos la configuracion geometrica del ajuste vertical para controlar la posicion de la barra
     adj_chat = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
 
+    // Instanciamos el contenedor interno vertical donde se iran apilando dinamicamente las lineas del chat
     caja_mensajes = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_valign(caja_mensajes, GTK_ALIGN_END);
+    gtk_widget_set_valign(caja_mensajes, GTK_ALIGN_END); // Anclamos el crecimiento hacia abajo
     gtk_container_add(GTK_CONTAINER(scrolled_window), caja_mensajes);
 
+    // --- AREA INFERIOR DE CAPTURA (HBox de entrada y transmision) ---
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_widget_set_margin_start(hbox, 10);
     gtk_widget_set_margin_end(hbox, 10);
@@ -322,24 +388,30 @@ void interfaz_grafica(int argc, char *argv[], Tuberia *padre)
     gtk_widget_set_margin_bottom(hbox, 10);
     gtk_box_pack_start(GTK_BOX(box), hbox, FALSE, FALSE, 0);
 
+    // Instanciamos el cuadro de entrada de texto plano (GtkEntry)
     entry = gtk_entry_new();
-
     gtk_entry_set_placeholder_text(GTK_ENTRY(entry), "Escribe un mensaje...");
-
+    
+    // Conectamos el evento "activate" (presionar Enter dentro del cuadro) al callback boton_pulsado
     g_signal_connect(entry, "activate", G_CALLBACK(boton_pulsado), entry);
     gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
 
+    // Instanciamos el boton fisico de Enviar
     button = gtk_button_new_with_label("Enviar");
+    // Conectamos el click del raton al mismo callback compartiendo el puntero de la caja de texto
     g_signal_connect(button, "clicked", G_CALLBACK(boton_pulsado), entry);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
-    // Cargar el historial previo antes de mostrar la ventana
+    // Reconstruimos la conversacion anterior leyendo de disco antes de levantar la interfaz visible
     cargar_historial();
 
+    // Mostramos la ventana y ordenamos la cascada jerarquica de widgets internos
     gtk_widget_show_all(window);
+    
+    // Bloqueamos el hilo principal cediendo el control total al despachador de eventos de GTK (Bucle principal)
     gtk_main();
 
-    // Sincronizar hilos al cerrar la aplicación
+    // Sincronizacion final: Al romperse el bucle, esperamos la terminacion e incorporacion de los hilos asincronos
     pthread_join(gui_lector, NULL);
     pthread_join(gui_escritor, NULL);
 }
