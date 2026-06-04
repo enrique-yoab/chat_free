@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1780367668.04257 "/home/enrique/Documents/Sistemas Distribuidos/Proyecto/chat_free/Documentacion/Proyecto_final.tex" "Proyecto_final.pdf" "Proyecto_final" 1780367669.23656 0
+["pdflatex"] 1780529278.10475 "/home/enrique/Documents/Sistemas Distribuidos/Proyecto/chat_free/Documentacion/Proyecto_final.tex" "Proyecto_final.pdf" "Proyecto_final" 1780529280.2897 0
   "/etc/texmf/web2c/texmf.cnf" 1771219098.53345 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/enrique/Documents/Sistemas Distribuidos/Proyecto/chat_free/Documentacion/Proyecto_final.tex" 1780367667.84876 12911 5b4ede4a35cf28f5c6be49c3c19ac64a ""
+  "/home/enrique/Documents/Sistemas Distribuidos/Proyecto/chat_free/Documentacion/Proyecto_final.tex" 1780529135.01423 12320 a8c1e6559e7701f79539d685e00fea23 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1246382020 916 f87d7c45f9c908e672703b83b72241a3 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam7.tfm" 1246382020 928 2dc8d444221b7a635bb58038579b861a ""
@@ -188,11 +188,16 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1777256873.96257 165012 f177baa1c39a3ebd62c3096a43521a0d ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1777340733 6852673 aee4cab200863a8eaae87b5f2d401498 ""
-  "Proyecto_final.aux" 1780367669.15687 3805 0ac301d7a9e09ea3e0348b8c15a8159c "pdflatex"
-  "Proyecto_final.tex" 1780367667.84876 12911 5b4ede4a35cf28f5c6be49c3c19ac64a ""
-  "codigo1.tex" 1780347065.89328 1153 818ff49b611bd0ea5bdb9b76591cdc80 ""
+  "Proyecto_final.aux" 1780529280.19821 6979 12db251cb14033cd8844f8b4149a10ba "pdflatex"
+  "Proyecto_final.tex" 1780529135.01423 12320 a8c1e6559e7701f79539d685e00fea23 ""
+  "codigo1.tex" 1780519587.56264 3195 253bb6ff6f618fb6f2a289936fc4a6e6 ""
+  "codigo2.tex" 1780519045.7318 16088 7e4cd24349ac235d76256b2444cdda1c ""
+  "codigo3.tex" 1780526796.3053 24587 94845d7fef57e470fe81de96521a8a28 ""
   "logo_fi.png" 1778985642.24495 74837 833902e07b5db5a486bbb8fc69d811e7 ""
   "logo_unam.png" 1778985642.25494 237072 066cabdc10addf78a5f13595056dd58c ""
+  "pseudocodigo1.tex" 1780529277.92285 2623 5b3b10bd8ce973ae5ce43475306a607a ""
+  "pseudocodigo2.tex" 1780521285.50873 6364 63a49f72e223a08bf433392596b0990e ""
+  "pseudocodigo3.tex" 1780528556.34562 11615 469be984e268aec71458bf68aca0085b ""
   (generated)
   "Proyecto_final.aux"
   "Proyecto_final.log"

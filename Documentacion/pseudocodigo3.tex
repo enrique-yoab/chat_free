@@ -1,0 +1,284 @@
+\subsubsection{\large Pseudocódigo \texttt{(interfaz.c)}}
+\begin{lstlisting}[style=estiloPseudo]
+// Banderas de control de ciclos de vida de la interfaz
+Volatil Entero gui_activo <- 1
+Volatil Entero gui_escribe <- 0
+
+// Estructuras de datos para comunicación asíncrona
+Mensaje msg_para_enviar      // Datos empaquetados listos para salir por el Pipe B
+Mensaje msg_recibido_pipe    // Datos extraídos del Pipe A listos para graficarse
+
+// Configuración de red del nodo remoto (amigo) y local
+Entero puerto_amigo <- 4001
+Cadena dir_amigo <- "127.0.0.1"
+Entero puerto_actual <- 4000
+
+// Componentes globales de GTK (Referencias de la Vista)
+Componente caja_mensajes     // Contenedor vertical de las burbujas de chat
+Componente adj_chat          // Control del scroll de la ventana de chat
+Cadena buffer[TAM_MAX]       // Buffer de texto genérico
+
+// Puntero de referencia a la tubería IPC principal
+Tuberia *gui_pipe_ref
+
+Procedimiento interfaz_grafica(argc, argv[], padre AS Referencia a Tuberia):
+    gui_pipe_ref <- padre
+
+    INICIALIZAR_ENTORNO_GTK(argc, argv)
+    cargar_css() // Cargar estilos visuales desde "v-boton.css"
+
+    // --- CONCURRENCIA: Lanzar hilos de comunicación con el Backend ---
+    CREAR_HILO(gui_lector, hilo_lector_gui, gui_pipe_ref)
+    CREAR_HILO(gui_escritor, hilo_escritor_gui, gui_pipe_ref)
+
+    // --- CONSTRUCCIÓN DE LA VENTANA PRINCIPAL ---
+    ventana <- CREAR_VENTANA_TOPLEVEL()
+    CONFIGURAR_TITULO(ventana, "MSN P2P - INTERFAZ")
+    CONFIGURAR_TAMAÑO(ventana, ancho <- 450, alto <- 650)
+    CONECTAR_SEÑAL(ventana, "destroy", ventana_destruida)
+
+    caja_base <- CREAR_CAJA_VERTICAL(espaciado <- 0)
+    AGREGAR_A_CONTENEDOR(ventana, caja_base)
+
+    // --- DISEÑO DE LA CABECERA (Estilo MSN) ---
+    cabecera <- CREAR_CAJA_HORIZONTAL(espaciado <- 10)
+    ASIGNAR_NOMBRE_CSS(cabecera, "header-messenger")
+    EMPAQUETAR_INICIO(caja_base, cabecera, expandir <- Falso)
+    
+    label_info <- CREAR_ETIQUETA()
+    FORMATEAR_CADENA(buffer, "<b>MESSENGER P2P</b>\nEscucha: %d - Conectado", puerto_actual)
+    ASIGNAR_TEXTO_MARKUP(label_info, buffer)
+    EMPAQUETAR_INICIO(cabecera, label_info, expandir <- Falso, margen <- 15)
+
+    btn_limpiar <- CREAR_BOTON_CON_TEXTO("Limpiar")
+    CONECTAR_SEÑAL(btn_limpiar, "clicked", limpiar_historial_pulsado)
+    EMPAQUETAR_FINAL(cabecera, btn_limpiar, expandir <- Falso, margen <- 15)
+
+    // --- ÁREA DE CHAT CON SCROLL ---
+    ventana_scroll <- CREAR_VENTANA_CON_SCROLL(Nulo, Nulo)
+    EMPAQUETAR_INICIO(caja_base, ventana_scroll, expandir <- Verdadero)
+    adj_chat <- OBTENER_AJUSTE_VERTICAL(ventana_scroll)
+
+    caja_mensajes <- CREAR_CAJA_VERTICAL(espaciado <- 0)
+    ALINEAR_VERTICAL_AL_FONDO(caja_mensajes) // Crecimiento natural hacia abajo
+    AGREGAR_A_CONTENEDOR(ventana_scroll, caja_mensajes)
+
+    // --- ÁREA INFERIOR DE ENTRADA DE TEXTO ---
+    caja_entrada <- CREAR_CAJA_HORIZONTAL(espaciado <- 5)
+    CONFIGURAR_MARGINS(caja_entrada, izq <- 10, der <- 10, sup <- 10, inf <- 10)
+    EMPAQUETAR_INICIO(caja_base, caja_entrada, expandir <- Falso)
+
+    campo_texto <- CREAR_CAMPO_ENTRADA_TEXTO()
+    CONFIGURAR_TEXTO_FONDO(campo_texto, "Escribe un mensaje...")
+    CONECTAR_SEÑAL(campo_texto, "activate", boton_pulsado, campo_texto) // Al presionar Enter
+    EMPAQUETAR_INICIO(caja_entrada, campo_texto, expandir <- Verdadero)
+
+    btn_enviar <- CREAR_BOTON_CON_TEXTO("Enviar")
+    CONECTAR_SEÑAL(btn_enviar, "clicked", boton_pulsado, campo_texto) // Al realizar clic
+    EMPAQUETAR_INICIO(caja_entrada, btn_enviar, expandir <- Falso)
+
+    // --- ARRANCAR SESIÓN ---
+    cargar_historial()       // Cargar mensajes previos desde el disco duro
+    MOSTRAR_TODO(ventana)     // Renderizar componentes gráficos
+    
+    EJECUTAR_BUCLE_PRINCIPAL_GTK() // Cede el control total a GTK (Bloqueante)
+
+    // --- LIMPIEZA POST-CIERRE ---
+    HILO_ESPERAR(gui_lector)
+    HILO_ESPERAR(gui_escritor)
+Fin Procedimiento
+
+Funcion hilo_lector_gui(arg AS Puntero) Devuelve Puntero:
+    local AS Referencia a Tuberia <- arg
+    Imprimir "[GUI-HILO-LECTOR] Hilo de lectura de pipe iniciado..."
+
+    Mientras gui_activo == 1 Hacer:
+        temporal AS Mensaje
+        // Operación bloqueante del Sistema Operativo en Pipe A[0]
+        bytes <- LEER_DE_PIPE(local.A[0], temporal)
+
+        Si bytes > 0 Y gui_activo == 1 Entonces
+            // Si el mensaje es una recepción legítima del exterior
+            Si temporal.tipo == RECEPCION Entonces
+                Imprimir "Recibí mensaje de la conexión..."
+                COPIAR_MEMORIA(msg_recibido_pipe, temporal)
+                // Delegar el renderizado al hilo principal de la GUI cuando esté libre
+                AGREGAR_A_CICLO_OCIO_GLIB(mostrar_mensaje_recibido)
+            Fin Si
+        Sino
+            Romper Bucle // Error o pipe roto, apagar hilo
+        Fin Si
+    Fin Mientras
+
+    Imprimir "[GUI-HILO-LECTOR] Saliendo del hilo lector."
+    TERMINAR_HILO()
+Fin Funcion
+
+Funcion hilo_escritor_gui(arg AS Puntero) Devuelve Puntero:
+    local AS Referencia a Tuberia <- arg
+    Imprimir "[GUI-HILO-ESCRITOR] Hilo de escritura de pipe iniciado..."
+
+    Mientras gui_activo == 1 Hacer:
+        // Sondeo continuo de la bandera controlada por el botón de Enviar
+        Si gui_escribe == 1 Entonces
+            ESCRIBIR_EN_PIPE(local^.B[1], msg_para_enviar)
+            gui_escribe <- 0 // Consumir el evento inmediatamente
+        Fin Si
+        
+        DORMIR_MICROSEGUNDOS(1000) // Evitar saturación del procesador
+    Fin Mientras
+
+    Imprimir "[GUI-HILO-ESCRITOR] Saliendo del hilo escritor."
+    TERMINAR_HILO()
+Fin Funcion
+
+Procedimiento añadir_burbuja(texto AS Cadena, es_mio AS Booleano, tiempo_ms AS Entero_Grande):
+    burbuja <- CREAR_ETIQUETA_TEXTO(texto)
+    CONFIGURAR_AJUSTE_LINEA(burbuja, Verdadero)
+    CONFIGURAR_ANCHO_MAXIMO_CARACTERES(burbuja, 35)
+
+    // Formatear estampa de tiempo usando Pango Markup (fuente pequeña)
+    str_tiempo AS Cadena
+    markup_tiempo AS Cadena
+    formatear_tiempo_str(tiempo_ms, str_tiempo)
+    FORMATEAR_CADENA(markup_tiempo, "<span font='8' foreground='#000000'>%s</span>", str_tiempo)
+    
+    label_tiempo <- CREAR_ETIQUETA_TEXTO_VACIA()
+    ASIGNAR_TEXTO_MARKUP(label_tiempo, markup_tiempo)
+    ALINEAR_VERTICAL_AL_CENTRO(label_tiempo)
+
+    fila_alineacion <- CREAR_CAJA_HORIZONTAL(espaciado <- 0)
+    CONFIGURAR_MARGINS(burbuja, izq <- 15, der <- 15, sup <- 5, inf <- 5)
+
+    Si es_mio == Verdadero Entonces
+        ALINEAR_HORIZONTAL_A_LA_DERECHA(fila_alineacion)
+        ASIGNAR_ID_CSS(burbuja, "mi-mensaje") // Color azul en CSS
+        // Estructura: [Tiempo] [Texto]
+        EMPAQUETAR_INICIO(fila_alineacion, label_tiempo, expandir <- Falso)
+        EMPAQUETAR_INICIO(fila_alineacion, burbuja, expandir <- Falso)
+    Sino
+        ALINEAR_HORIZONTAL_A_LA_IZQUIERDA(fila_alineacion)
+        ASIGNAR_ID_CSS(burbuja, "su-mensaje") // Color guinda en CSS
+        // Estructura: [Texto] [Tiempo]
+        EMPAQUETAR_INICIO(fila_alineacion, burbuja, expandir <- Falso)
+        EMPAQUETAR_INICIO(fila_alineacion, label_tiempo, expandir <- Falso)
+    Fin Si
+
+    AGREGAR_A_CONTENEDOR(caja_mensajes, fila_alineacion)
+    MOSTRAR_ELEMENTO_Y_HIJOS(fila_alineacion)
+
+    // Programar auto-scroll automático
+    AGREGAR_A_CICLO_OCIO_GLIB(scroll_al_final)
+Fin Procedimiento
+
+Procedimiento boton_pulsado(widget, data):
+    entry_widget <- Convertir_A_GtkEntry(data)
+    texto AS Cadena <- OBTENER_TEXTO_DE_CAMPO(entry_widget)
+
+    Si LONGITUD_CADENA(texto) > 0 Entonces
+        mi_tiempo <- get_time_ms()
+        
+        // Pintar en pantalla y guardar localmente en el archivo txt
+        añadir_burbuja(texto, TRUE, mi_tiempo)
+        guardar_en_historial(texto, TRUE, mi_tiempo)
+
+        // Serializar estructura para mandar al Backend por el Pipe B
+        msg_para_enviar.id_emisor <- OBTENER_PID_PROCESO_ACTUAL()
+        msg_para_enviar.tipo <- ENVIO
+        COPIAR_CADENA(msg_para_enviar.texto, texto)
+        COPIAR_CADENA(msg_para_enviar.ip_destino, dir_amigo)
+        msg_para_enviar.puerto_destino <- puerto_amigo
+        msg_para_enviar.tiempo <- mi_tiempo
+
+        gui_escribe <- 1 // Despertar al hilo escritor de la GUI
+        VACIAR_CAMPO_TEXTO(entry_widget) // Dejar limpio para el siguiente texto
+    Fin Si
+Fin Procedimiento
+
+Procedimiento ventana_destruida(widget, data):
+    Imprimir "[GUI] Cerrando ventana. Enviando señal de apagado..."
+
+    // Envasar mensaje de control con ID de apagado global (-1)
+    msg_para_enviar.id_emisor <- -1
+    msg_para_enviar.tipo <- SALIDA
+    COPIAR_CADENA(msg_para_enviar.texto, "Cierre de interfaz.")
+    
+    // Escritura forzada y síncrona en el Pipe B para apagar el backend antes de morir
+    ESCRIBIR_EN_PIPE(gui_pipe_ref^.B[1], msg_para_enviar)
+    
+    gui_escribe <- 0
+    gui_activo <- 0 // Forzar salida de los bucles de los hilos remanentes
+    
+    TERMINAR_BUCLE_PRINCIPAL_GTK()
+Fin Procedimiento
+
+Procedimiento guardar_en_historial(texto AS Cadena, es_mio AS Booleano, tiempo_ms AS Entero_Grande):
+    archivo <- ABRIR_ARCHIVO("historial_chat.txt", Modo <- "Añadir")
+    Si archivo != Nulo Entonces
+        Entero_Origen <- es_mio ? 1 : 0
+        IMPRIMIR_EN_ARCHIVO(archivo, "%d|%lld|%s\n", Entero_Origen, tiempo_ms, texto)
+        CERRAR_ARCHIVO(archivo)
+    Fin Si
+Fin Procedimiento
+
+
+Procedimiento cargar_historial():
+    archivo <- ABRIR_ARCHIVO("historial_chat.txt", Modo <- "Lectura")
+    Si archivo == Nulo Entonces Salir
+
+    linea AS Cadena
+    Mientras LEER_LINEA_DE_ARCHIVO(linea, archivo) != Nulo Hacer:
+        ELIMINAR_SALTO_LINEA_FINAL(linea)
+
+        // Tokenización manual usando el delimitador '|'
+        ptr1 <- ENCONTRAR_CARACTER(linea, '|')
+        Si ptr1 != Nulo Entonces
+            REMPLAZAR_CON_NULO(ptr1)
+            es_mio <- CONVERTIR_A_ENTERO(linea)
+            
+            ptr2 <- ENCONTRAR_CARACTER(ptr1 + 1, '|')
+            Si ptr2 != Nulo Entonces
+                REMPLAZAR_CON_NULO(ptr2)
+                tiempo_ms <- CONVERTIR_A_ENTERO_LONG_LONG(ptr1 + 1)
+                texto <- EXTRAER_CADENA(ptr2 + 1)
+                
+                // Regenerar burbujas del pasado de forma retrospectiva
+                añadir_burbuja(texto, es_mio == 1 ? Verdadero : Falso, tiempo_ms)
+            Fin Si
+        Fin Si
+    Fin Mientras
+    CERRAR_ARCHIVO(archivo)
+Fin Procedimiento
+
+
+Procedimiento limpiar_historial_pulsado(widget, data):
+    // Truncar el archivo a 0 bytes
+    archivo <- ABRIR_ARCHIVO("historial_chat.txt", Modo <- "Escritura_Limpia")
+    Si archivo != Nulo Entonces CERRAR_ARCHIVO(archivo)
+
+    // Destruir todos los objetos gráficos burbuja dentro del contenedor
+    PARA_CADA_HIJO_EN_CONTENEDOR(caja_mensajes, DESTRUIR_WIDGET)
+    
+    Imprimir "[GUI] Historial limpiado."
+Fin Procedimiento
+
+Funcion scroll_al_final(data AS Puntero) Devuelve Booleano:
+    max_scroll <- OBTENER_VALOR_SUPERIOR_MAXIMO(adj_chat)
+    tamaño_pagina <- OBTENER_TAMAÑO_PAGINA_VISIBLE(adj_chat)
+    ASIGNAR_VALOR_SCROLL(adj_chat, max_scroll - tamaño_pagina)
+    Devolver Falso // Auto-destruir callback de eventos diferidos
+Fin Funcion
+
+Funcion mostrar_mensaje_recibido(data AS Puntero) Devuelve Booleano:
+    añadir_burbuja(msg_recibido_pipe.texto, Falso, msg_recibido_pipe.tiempo)
+    guardar_en_historial(msg_recibido_pipe.texto, Falso, msg_recibido_pipe.tiempo)
+    Devolver Falso
+Fin Funcion
+
+Procedimiento cargar_css():
+    proveedor <- CREAR_PROVEEDOR_CSS()
+    pantalla <- OBTENER_PANTALLA_GRAFICA_SISTEMA()
+    INTERPRETAR_ARCHIVO_CSS_DESDE_RUTA(proveedor, "v-boton.css")
+    INYECTAR_ESTILOS_A_PANTALLA(pantalla, proveedor, PRIORIDAD_APLICACION)
+Fin Procedimiento
+\end{lstlisting}

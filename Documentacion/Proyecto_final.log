@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.4.27)  1 JUN 2026 20:34
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.4.27)  3 JUN 2026 17:27
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -739,47 +739,225 @@ File: logo_fi.png Graphic file (type png)
 <use logo_fi.png>
 Package pdftex.def Info: logo_fi.png  used on input line 245.
 (pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
- [2{/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}] (./codigo1.tex (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+ [2{/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}] (./codigo1.tex
+LaTeX Font Info:    Font shape `OT1/lmtt/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/lmtt/b/n' tried instead on input line 1.
+ (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2023/02/27 1.9 listings language file
 ) (/usr/share/texlive/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
 )
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 2.
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 10.
 LaTeX Font Info:    Font shape `OT1/lmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `OT1/lmtt/b/n' tried instead on input line 3.
+(Font)              Font shape `OT1/lmtt/b/n' tried instead on input line 11.
 File: logo_fi.png Graphic file (type png)
 <use logo_fi.png>
-Package pdftex.def Info: logo_fi.png  used on input line 28.
+Package pdftex.def Info: logo_fi.png  used on input line 26.
 (pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
- [3])
+ [3]) (./pseudocodigo1.tex
 File: logo_fi.png Graphic file (type png)
 <use logo_fi.png>
-Package pdftex.def Info: logo_fi.png  used on input line 256.
+Package pdftex.def Info: logo_fi.png  used on input line 15.
 (pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
  [4]
 File: logo_fi.png Graphic file (type png)
 <use logo_fi.png>
-Package pdftex.def Info: logo_fi.png  used on input line 267.
+Package pdftex.def Info: logo_fi.png  used on input line 54.
 (pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
- [5] (./Proyecto_final.aux)
+ [5]) (./codigo2.tex
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 20.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [6]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 62.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [7]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 101.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [8]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 135.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [9]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 170.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [10]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 206.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [11]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 239.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [12]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 278.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [13]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 313.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [14]) (./pseudocodigo2.tex
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 30.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [15]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 73.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [16]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 115.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [17]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 158.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [18]) (./codigo3.tex
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 10.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [19]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 38.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [20]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 69.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [21]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 103.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [22]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 140.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [23]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 176.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [24]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 210.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [25]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 245.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [26]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 282.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [27]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 318.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [28]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 355.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [29]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 394.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [30]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 430.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [31]) (./pseudocodigo3.tex
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 27.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [32]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 68.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [33]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 109.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [34]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 150.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [35]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 193.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [36]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 235.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [37]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 278.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [38])
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 254.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [39]
+File: logo_fi.png Graphic file (type png)
+<use logo_fi.png>
+Package pdftex.def Info: logo_fi.png  used on input line 265.
+(pdftex.def)             Requested size: 29.99474pt x 35.56593pt.
+ [40] (./Proyecto_final.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 26726 strings out of 476047
- 484699 string characters out of 5792075
- 2053975 words of memory out of 5000000
- 48265 multiletter control sequences out of 15000+600000
- 596688 words of font info for 65 fonts, out of 8000000 for 9000
+ 29599 strings out of 476047
+ 527207 string characters out of 5792075
+ 2453975 words of memory out of 5000000
+ 49844 multiletter control sequences out of 15000+600000
+ 596998 words of font info for 66 fonts, out of 8000000 for 9000
  85 hyphenation exceptions out of 8191
- 89i,16n,93p,794b,2233s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 89i,16n,93p,936b,2233s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/type1/public/lm/lmbxi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr6.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texmf/fonts/type1/public/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/lmtk10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt12.pfb>
-Output written on Proyecto_final.pdf (5 pages, 479436 bytes).
+Output written on Proyecto_final.pdf (40 pages, 620672 bytes).
 PDF statistics:
- 195 PDF objects out of 1000 (max. 8388607)
- 161 compressed objects within 2 object streams
- 63 named destinations out of 1000 (max. 500000)
- 87 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1877 PDF objects out of 2073 (max. 8388607)
+ 1792 compressed objects within 18 object streams
+ 1342 named destinations out of 1440 (max. 500000)
+ 127 words of extra memory for PDF output out of 10000 (max. 10000000)
 
