@@ -256,7 +256,7 @@
 \input{diagrama3.tex}
 \input{codigo4.tex}
 \input{pseudocodigo4.tex}
-% \input{diagrama4.tex}
+\input{diagrama4.tex}
 
 
 \subsection{\large Conexión Física y Enrutamiento de Red (Tailscale)}
@@ -266,8 +266,7 @@ Para resolver este desafío de conectividad sin necesidad de realizar configurac
 
 Al instalar Tailscale en ambas máquinas, el software les asigna una dirección IP estática dentro de una misma subred virtual (por ejemplo, en el rango \texttt{100.x.x.x}). Esto permite que los \textit{sockets} de nuestra aplicación en C puedan realizar el \texttt{bind()} y el \texttt{connect()} apuntando directamente a las direcciones IP virtuales proporcionadas por la plataforma, engañando al sistema para que interactúe como si ambas computadoras estuvieran conectadas al mismo conmutador (\textit{switch}) en una red de área local (LAN). De este modo, garantizamos un túnel encriptado, directo y de baja latencia para la transmisión de las estructuras \texttt{Mensaje}.
 
-\newpage
-\section{\large Conclusión}
+\section{\large 5. Conclusiones}
 \begin{itemize}
     \item \textbf{Enrique Yoab Cortez Rios}
 \end{itemize}
@@ -279,8 +278,19 @@ Asimismo, la implementación de Tailscale fue un gran acierto para la arquitectu
 
 En conclusión, la práctica se completó con éxito y cumplió sus objetivos formativos. Se consolidaron los conceptos de programación concurrente, logrando distribuir la carga de trabajo entre los procesos para mantener todo el sistema coordinado. El uso de hilos (pthreads) demostró ser clave para manejar las operaciones bloqueantes de escucha y escritura en las tuberías y los sockets, garantizando que la interfaz gráfica se mantuviera reactiva en todo momento y libre de congelamientos.
 
+\newpage
+\begin{itemize}
+    \item \textbf{Mario Mendoza González}
+\end{itemize}
+El desarrollo de este proyecto permitió entender de una forma mucho más práctica cómo funcionan varios de los conceptos vistos en la materia cuando se integran en una sola aplicación. Aunque al inicio temas como la comunicación entre procesos, el uso de hilos o la programación con sockets parecían independientes, durante la implementación fue posible ver cómo todos ellos se relacionan para resolver un mismo problema.
 
-\section{\large Referencias}
+Uno de los mayores retos fue lograr que la interfaz gráfica, la comunicación mediante tuberías y la conexión P2P trabajaran al mismo tiempo sin interferirse entre sí. Esto ayudó a comprender la importancia de la concurrencia y de una buena organización del sistema, ya que cada proceso y cada hilo tienen una función específica dentro de la aplicación.
+
+Además del aspecto técnico, el proyecto permitió acercarse al desarrollo de software de una manera más completa, considerando no solo que el programa funcionara, sino también que fuera estable, fácil de utilizar y capaz de mantener la información de las conversaciones. Entender cómo un mensaje viaja desde la interfaz, pasa por los mecanismos de comunicación interna y finalmente llega a otro nodo hizo más claro el funcionamiento de un sistema distribuido real (una aplicación tipo messenger).
+
+Finalmente, quedó claro que detrás de las aplicaciones de mensajes existe una gran cantidad de procesos trabajando. La experiencia obtenida durante el desarrollo ayudó a reforzar los conocimientos de la materia y a comprender mejor lo que implica diseñar sistemas.
+
+\section{\large 6. Referencias}
 \begin{itemize}
     \item Oporto Díaz, S. (s.f.). Material Adicional (SOSD – Mod 4): Concurrencia. Exclusión mutua y sincronización [PDF]. Departamento de Ciencias e Ingeniería de la Computación, Universidad Nacional del Sur. Disponible en \href{https://cs.uns.edu.ar/~gd/soyd/clases/04-SincronizacionExtras.pdf}{cs.uns.edu.ar}.
     
