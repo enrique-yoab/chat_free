@@ -1,0 +1,67 @@
+\subsection{\large Archivo Principal \texttt{(chat.c)}}
+Este archivo es el orquestador de toda la lógica de la conexión P2P y la interfaz gráfica que se muestra al usuario. Al modular ambas partes, se requiere la bifurcación del sistema en dos procesos independientes (un padre y un hijo) mediante la directiva \texttt{fork()}, lo que permite manejar la aplicación completa de forma concurrente sin que la red bloquee la interfaz.
+
+\begin{lstlisting}[style=estiloC]
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include "header.h"
+
+// Tubería que se usa para comunicar los dos procesos (Pipe A y Pipe B)
+Tuberia principal;
+
+int main(int argc, char *argv[])
+{
+    // Creamos las dos tuberías a utilizar durante la ejecución
+    if (pipe(principal.B) < 0 || pipe(principal.A) < 0)
+    {
+        perror("Error al crear los pipes");
+        return 1;
+    }
+    
+    // Creamos un proceso hijo mediante fork para levantar la conexión P2P
+    pid_t process = fork();
+    
+    // Si ocurre algún error en la bifurcación, se cancela la ejecución
+    if (process < 0)
+        return 1;
+        
+    // De lo contrario, el proceso hijo (process == 0) se encarga de la conexión P2P
+    if (process == 0)
+    {
+        // El hijo cierra los extremos no usados de las tuberías
+        close(principal.A[0]);
+        close(principal.B[1]);
+        
+        // Llama a la función que levanta la red y los sockets
+        conexion(&principal);
+        
+        // Cierra los extremos utilizados para terminar exitosamente y liberar memoria
+        close(principal.A[1]); 
+        close(principal.B[0]);
+
+        exit(0);
+    }
+    else // El proceso padre se encarga de renderizar la interfaz gráfica
+    {
+        // Se duerme 2 segundos para dar tiempo a que el back-end levante el servidor
+        sleep(2);
+        
+        // El padre cierra los extremos que no utiliza de las tuberías
+        close(principal.A[1]);
+        close(principal.B[0]);
+        
+        // Llama a la función principal de GTK que crea la vista
+        interfaz_grafica(argc, argv, &principal);
+        
+        // Cierra los extremos utilizados tras cerrar la ventana
+        close(principal.A[0]); 
+        close(principal.B[1]);
+        
+        // El padre espera a que el proceso hijo termine para cerrarse exitosamente
+        wait(NULL);
+    }
+    return 0;
+}
+\end{lstlisting}

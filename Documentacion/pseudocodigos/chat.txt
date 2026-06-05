@@ -1,0 +1,65 @@
+// Instanciación global de los canales de comunicación cruzados
+Tuberia principal
+
+Algoritmo Principal(argc AS Entero, argv[] AS Cadena):
+    
+    // 1. Crear las dos tuberías IPC (Inter-Process Communication)
+    // Pipe A: Backend -> Interfaz  |  Pipe B: Interfaz -> Backend
+    Si Crear_Pipe(principal.B) < 0 O Crear_Pipe(principal.A) < 0 Entonces
+        Imprimir_Error("Error al crear los pipes")
+        Devolver 1
+    Fin Si
+
+    // 2. Dividir la ejecución del programa en dos procesos paralelos
+    process <- Fork()
+    
+    Si process < 0 Entonces
+        Devolver 1 // Cancelar todo si el fork falla
+    Fin Si
+
+    // ==================== RAMIFICACIÓN DE PROCESOS ====================
+
+    Si process == 0 Entonces
+        // --------------------------------------------------------------
+        // CÓDIGO DEL PROCESO HIJO (Módulo Backend / Red P2P)
+        // --------------------------------------------------------------
+        
+        // Cierra los extremos invertidos que le corresponden al Padre
+        Cerrar(principal.A[0]) // No lee de A (él escribe en A[1])
+        Cerrar(principal.B[1]) // No escribe en B (él lee de B[0])
+
+        // Inicializa el entorno de red P2P y sus 4 hilos internos
+        conexion(principal)
+
+        // Limpieza de descriptores al apagar el backend
+        Cerrar(principal.A[1])
+        Cerrar(principal.B[0])
+
+        Terminar Proceso Exitosamente
+        
+    Sino
+        // --------------------------------------------------------------
+        // CÓDIGO DEL PROCESO PADRE (Módulo Frontend / Interfaz Gráfica GTK)
+        // --------------------------------------------------------------
+        
+        // Pausa de cortesía para permitir que el Backend abra los Sockets de red
+        Dormir_Segundos(2)
+
+        // Cierra los extremos invertidos que le corresponden al Hijo
+        Cerrar(principal.A[1]) // No escribe en A (él lee de A[0])
+        Cerrar(principal.B[0]) // No lee de B (él escribe en B[1])
+
+        // Lanza y bloquea la ejecución en la interfaz gráfica estilo MSN
+        interfaz_grafica(argc, argv, principal)
+
+        // Limpieza de descriptores al cerrar la ventana de la GUI
+        Cerrar(principal.A[0])
+        Cerrar(principal.B[1])
+
+        // Sincronización final: Esperar a que el Hijo muera de forma segura
+        Esperar_Hijo(Nulo)
+        
+    Fin Si
+
+    Devolver 0
+Fin Algoritmo

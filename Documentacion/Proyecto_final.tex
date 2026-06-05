@@ -12,6 +12,8 @@
 \tcbuselibrary{breakable}
 \usepackage{array}
 \usepackage{hyperref}
+\setkeys{Hyp}{breaklinks=true} % Fuerza a hyperref a romper los enlaces largos
+\urlstyle{same}                % Opcional: Hace que la fuente de la URL sea igual a la del texto
 \usepackage{fancyhdr}   % Para el encabezado de las páginas siguientes
 \usepackage{titlesec}   % Para personalizar los títulos
 \usepackage{enumitem}
@@ -252,16 +254,44 @@
 \input{codigo3.tex}
 \input{pseudocodigo3.tex}
 \input{diagrama3.tex}
+\input{codigo4.tex}
+\input{pseudocodigo4.tex}
+% \input{diagrama4.tex}
+
+
+\subsection{\large Conexión Física y Enrutamiento de Red (Tailscale)}
+Para establecer la comunicación peer to peer entre dos computadoras ubicadas en distintas redes geográficas, nos enfrentamos al problema clásico de las restricciones de red impuestas por los ruteadores y el NAT (\textit{Network Address Translation}) de los proveedores de servicios de internet (ISP), los cuales bloquean las conexiones entrantes por defecto.
+
+Para resolver este desafío de conectividad sin necesidad de realizar configuraciones invasivas como el \textit{Port Forwarding} en cada módem, se implementó \textbf{Tailscale}. Esta herramienta es una VPN de malla (\textit{Mesh VPN}) basada en el protocolo WireGuard que crea una red privada virtual superpuesta. 
+
+Al instalar Tailscale en ambas máquinas, el software les asigna una dirección IP estática dentro de una misma subred virtual (por ejemplo, en el rango \texttt{100.x.x.x}). Esto permite que los \textit{sockets} de nuestra aplicación en C puedan realizar el \texttt{bind()} y el \texttt{connect()} apuntando directamente a las direcciones IP virtuales proporcionadas por la plataforma, engañando al sistema para que interactúe como si ambas computadoras estuvieran conectadas al mismo conmutador (\textit{switch}) en una red de área local (LAN). De este modo, garantizamos un túnel encriptado, directo y de baja latencia para la transmisión de las estructuras \texttt{Mensaje}.
 
 \newpage
 \section{\large Conclusión}
-Aqui va conclusion
+\begin{itemize}
+    \item \textbf{Enrique Yoab Cortez Rios}
+\end{itemize}
+El desarrollo de esta práctica representó un gran reto técnico, ya que la aplicación pasó por múltiples etapas de rectificación y optimización de recursos. La implementación de tuberías cruzadas (pipes) y la asignación de hilos específicos para la lectura y escritura entre el front-end y el back-end resultó ser la solución más eficiente. Esta arquitectura nos permitió comunicar los procesos de forma directa y asíncrona, evitando el uso de intermediarios para transferir los datos entre la red y la interfaz.
+
+Por otro lado, la biblioteca GTK fue fundamental para construir una interfaz gráfica nativa íntegramente en C. Una gran ventaja de esta herramienta fue la posibilidad de estilizar la ventana mediante un archivo CSS. Al tener experiencia previa con el desarrollo web y la estructura de componentes visuales, integrar estas hojas de estilo resultó un proceso muy natural, permitiendo dotar al chat de una apariencia mucho más atractiva, moderna y amigable para el usuario.
+
+Asimismo, la implementación de Tailscale fue un gran acierto para la arquitectura del proyecto, ya que nos permitió establecer una conexión peer-to-peer a través de internet, enlazando ambas computadoras mediante direcciones IP virtuales sin la estricta necesidad de estar conectadas físicamente por un cable Ethernet en la misma red local.
+
+En conclusión, la práctica se completó con éxito y cumplió sus objetivos formativos. Se consolidaron los conceptos de programación concurrente, logrando distribuir la carga de trabajo entre los procesos para mantener todo el sistema coordinado. El uso de hilos (pthreads) demostró ser clave para manejar las operaciones bloqueantes de escucha y escritura en las tuberías y los sockets, garantizando que la interfaz gráfica se mantuviera reactiva en todo momento y libre de congelamientos.
+
+
 \section{\large Referencias}
 \begin{itemize}
-    \item Amazon Web Services. (s. f.). ¿Qué es un cliente ligero? Amazon Web Services, Inc. \url{https://aws.amazon.com/es/what-is/thin-client/}
-    \item Amazon Web Services. (s. f.-b). Qué es una CLI (interfaz de la línea de comandos)? Amazon Web Services, Inc. Amazon Web Services. (s. f.-b). Qué es una CLI (interfaz de la línea de comandos)? Amazon Web Services, Inc. \url {https://aws.amazon.com/es/what-is/cli}
-    \item Velázquez, D. (2022, 22 enero). Exclusión mutua , Sistemas Operativos , WebProgramacion Consultoría Informática. WebProgramacion Consultoría Informática. \url{https://webprogramacion.com/exclusion-mutua/}
-    \item Oporto Díaz, S. (s.f.). Material Adicional (SOSD – Mod 4): Concurrencia. Exclusión mutua y sincronización [PDF]. Departamento de Ciencias e Ingeniería de la Computación, Universidad Nacional del Sur. \url{https://cs.uns.edu.ar/~gd/soyd/clases/04-SincronizacionExtras.pdf}
+    \item Oporto Díaz, S. (s.f.). Material Adicional (SOSD – Mod 4): Concurrencia. Exclusión mutua y sincronización [PDF]. Departamento de Ciencias e Ingeniería de la Computación, Universidad Nacional del Sur. Disponible en \href{https://cs.uns.edu.ar/~gd/soyd/clases/04-SincronizacionExtras.pdf}{cs.uns.edu.ar}.
+    
+    \item De Luz, S. (2026, 12 marzo). Tailscale, conecta equipos a una red privada virtual (VPN) fácilmente. RedesZone. Disponible en \href{https://www.redeszone.net/tutoriales/vpn/configurar-tailscale-red-vpn-segura/}{RedesZone}.
+    
+    \item Purita, G. (2026, 17 marzo). ¿Qué son las redes P2P y cuál su utilidad? OBS Business School. Disponible en \href{https://www.obsbusiness.school/blog/que-son-las-redes-p2p-y-cual-su-utilidad}{OBS Business School}.
+    
+    \item Hilo en computación: ¿Qué es? | Lenovo México. (s. f.). Disponible en \href{https://www.lenovo.com/mx/es/glosario/hilo/?orgRef=https%253A%252F%252Fwww.google.com%252F}{Lenovo México}.
+    
+    \item Klie, F. R. (2026, 5 marzo). Understanding `fork()` in Linux: How Process Creation Really Works. DEV Community. Disponible en \href{https://dev-to.translate.goog/farhadrahimiklie/understanding-fork-in-linux-how-process-creation-really-works-13id?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=es&_x_tr_pto=sge}{DEV Community}.
+    \item Team, G. (s. f.). The GTK Project - A free and open-source cross-platform widget toolkit. The GTK Team. \href{https://www.gtk.org/}{Web oficial GTK}
 \end{itemize}
 
 \end{document}

@@ -252,7 +252,7 @@ void cargar_css(void)
     // Leemos e interpretamos los selectores declarados en "v-boton.css"
     gtk_css_provider_load_from_path(provider, "v-boton.css", NULL);
     // Aplicamos los estilos de forma global a la pantalla con prioridad de aplicacion para sobreescribir temas nativos
-    gtk_css_provider_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     // Decrementamos el contador de referencias del proveedor para liberar memoria limpia
     g_object_unref(provider);
 }

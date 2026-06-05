@@ -1,0 +1,179 @@
+// Banderas de control de ciclos de vida
+Volatil Entero encendido <- 1
+Volatil Entero activo <- 1
+
+// Banderas de control de eventos de escritura
+Volatil Entero escribe <- 0
+Volatil Entero regresa <- 0
+
+// Configuración de red por defecto
+Entero PUERTO <- 4000
+Cadena DIRECCION <- "127.0.0.1"
+
+// Buffers globales donde se comparten datos entre hilos
+Mensaje interfaz  // Datos desde la GUI
+Mensaje externo   // Datos desde la Red (Sockets)
+
+Procedimiento conexion(local AS Referencia a Tuberia):
+    Imprimir "[HIJO] Inicializando los 4 hilos (Sockets y Pipes)..."
+    
+    // Crear los hilos y asignarles sus respectivas funciones de manera concurrente
+    CREAR_HILO(servidor, hilo_lector_p2p, Nulo)
+    CREAR_HILO(escritor, hilo_escritor_p2p, Nulo)
+    CREAR_HILO(pipe_lector, hilo_lector_pipe, local)
+    CREAR_HILO(pipe_escritor, hilo_escritor_pipe, local)
+
+    // Esperar de forma bloqueante a cada uno hilo
+    ESPERAR_HILO(servidor)
+    ESPERAR_HILO(escritor)
+    ESPERAR_HILO(pipe_lector)
+    ESPERAR_HILO(pipe_escritor)
+
+    Imprimir "[HIJO] Todos los hilos destruidos de forma segura. Saliendo."
+Fin Procedimiento
+
+Funcion hilo_lector_p2p(arg AS Puntero):
+    server_fd <- CREAR_SOCKET(AF_INET, SOCK_STREAM) // Protocolo TCP
+    Si server_fd < 0 Entonces TERMINAR_HILO()
+
+    CONFIGURAR_SOCKET(server_fd, SO_REUSEADDR) // Reutilizar puerto rápido
+    
+    // Configurar los datos del Servidor
+    Dirección_Red.familia <- AF_INET
+    Dirección_Red.ip <- CUALQUIERA_DISPONIBLE
+    Dirección_Red.puerto <- CONVERTIR_A_FORMATO_RED(PUERTO)
+
+    Si VINCULAR_PUERTO(server_fd, Dirección_Red) < 0 Entonces
+        CERRRAR_SOCKET(server_fd)
+        TERMINAR_HILO()
+    Fin Si
+
+    ESCUCHAR_PUERTO(server_fd, Limite_Cola <- 5)
+
+    msg_recibido AS Mensaje
+
+    Mientras encendido == 1 Hacer:
+        // Esperamos una conexion externa
+        new_socket <- ACEPTAR_CONEXION(server_fd, Dirección_Red)
+        
+        Si new_socket >= 0 Entonces
+            LIMPIAR_MEMORIA(msg_recibido)
+            LEER_DE_SOCKET(new_socket, msg_recibido)
+
+            // Caso_1: Evento de apagado del programa
+            Si msg_recibido.id_emisor == -1 Entonces
+                Imprimir "[GLOBAL] Evento de cierre... Cerrando hilos..."
+                encendido <- 0
+                activo <- 0
+                CERRRAR_SOCKET(new_socket)
+                Romper Bucle
+                
+            // Caso_2: Mensaje de chat normal recibido
+            Sino
+                Imprimir "Hilo recibió mensaje en puerto: ", PUERTO
+                msg_recibido.tipo <- RECEPCION // Para alinear a la izquierda en la GUI
+                externo <- msg_recibido        // Pasar a la variable global
+                regresa <- 1                   // Activar hilo del pipe escritor
+            Fin Si
+            
+            CERRRAR_SOCKET(new_socket)
+        Fin Si
+    Fin Mientras
+
+    CERRRAR_SOCKET(server_fd)
+    TERMINAR_HILO()
+Fin Funcion
+
+Funcion hilo_escritor_p2p(arg AS Puntero):
+    Mientras encendido == 1 Hacer:
+        // Si hay una orden de escritura pendiente
+        Si escribe == 1 Entonces
+            escribe <- 0 // Consumir el evento
+            enviar_msj(interfaz.ip_destino, interfaz.puerto_destino, interfaz)
+            Imprimir "Hilo envió mensaje a ", interfaz.puerto_destino
+        Fin Si
+        
+        DORMIR_MICROSEGUNDOS(1000) // Evitar que el procesador trabaje al 100% de forma inútil
+    Fin Mientras
+    TERMINAR_HILO()
+Fin Funcion
+
+Funcion hilo_lector_pipe(arg AS Puntero):
+    local AS Referencia a Tuberia <- arg
+    msg_pipe AS Mensaje
+
+    Mientras activo == 1 Hacer:
+        // Espera bloqueante del pipe de la interfaz
+        bytes <- LEER_DE_PIPE(local.B[0], msg_pipe)
+        
+        Si bytes > 0 Y activo == 1 Entonces
+            // Caso 1: El usuario cerró la ventana de la GUI
+            Si msg_pipe.id_emisor == -1 Entonces
+                // Se envía un mensaje de cierre a sí mismo (al servidor local)
+                enviar_msj(DIRECCION, PUERTO, msg_pipe)
+                Romper Bucle
+                
+            // Caso 2: El usuario escribió un mensaje ordinario
+            Sino
+                Imprimir "Recibí Mensaje de la GUI..."
+                interfaz <- msg_pipe // Almacenar en buffer global de salida
+                escribe <- 1         // Despertar al escritor P2P
+            Fin Si
+        Fin Si
+    Fin Mientras
+    TERMINAR_HILO()
+Fin Funcion
+
+Funcion hilo_escritor_pipe(arg AS Puntero):
+    local AS Referencia a Tuberia <- arg
+
+    Mientras activo == 1 Hacer:
+        // Por lo tanto el servidor P2P nos avisa de mensajes sobre la red
+        Si regresa == 1 Entonces
+            regresa <- 0 // Consumir el evento
+            ESCRIBIR_EN_PIPE(local.A[1], externo) // Enviar directo a la interfaz
+        Fin Si
+        
+        DORMIR_MICROSEGUNDOS(1000)
+    Fin Mientras
+    TERMINAR_HILO()
+Fin Funcion
+
+Procedimiento enviar_msj(ip_destino AS Cadena,puerto_destino AS Entero,msg AS Mensaje):
+    sock <- CREAR_SOCKET(AF_INET, SOCK_STREAM)
+    Si sock < 0 Entonces Salir
+
+    Destino_Red.puerto <- CONVERTIR_A_FORMATO_RED(puerto_destino)
+    Destino_Red.familia <- AF_INET
+    
+    // Convertir IP de texto "127.0.0.1" a binario de red
+    Si CONVERTIR_IP_TEXTO_A_BINARIO(ip_destino, Destino_Red.ip) <= 0 Entonces
+        Cerrar(sock)
+        Salir
+    Fin Si
+
+    // Intentar conectar con el nodo remoto (Handshake de 3 vías)
+    Si CONECTAR_A_SOCKET(sock, Destino_Red) >= 0 Entonces
+        ENVIAR_DATOS_SOCKET(sock, msg)
+    Fin Si
+
+    Cerrar(sock)
+Fin Procedimiento
+
+Funcion get_time_ms() Devuelve Entero_Grande:
+    tv AS Estructura_Tiempo
+    OBTENER_TIEMPO_DEL_SISTEMA(tv)
+    // Combinar segundos y microsegundos a milisegundos totales
+    Devolver (tv.segundos * 1000) + (tv.microsegundos / 1000)
+Fin Funcion
+
+
+Procedimiento formatear_tiempo_str(tiempo_ms AS Entero_Grande, buffer_salida AS Referencia a Cadena):
+    segundos <- tiempo_ms / 1000
+    milisegundos <- tiempo_ms % 1000
+    
+    tm_info AS Estructura_Calendario <- CONVERTIR_A_TIEMPO_LOCAL(segundos)
+    
+    // Escribe los milisegundos en formato HH:MM:SS:ms
+    FORMATEAR_CADENA(buffer_salida, "%02d:%02d:%02d:%03d", tm_info.hora, tm_info.minuto, tm_info.segundo, milisegundos)
+Fin Procedimiento

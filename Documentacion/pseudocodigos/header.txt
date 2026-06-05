@@ -1,0 +1,52 @@
+// Guardas de seguridad para evitar la doble inclusión del archivo en el compilador
+Si NO está definido HEADER_H Entonces
+    Definir HEADER_H
+
+    // Configuración y Constantes Globales
+    Constante TAM_MAX <- 1024
+
+    // ==================== DEFINICIÓN DE TIPOS DE DATOS ====================
+
+    // Enumeración para clasificar la naturaleza del mensaje IPC/Red
+    Enumeración TipoMensaje:
+        ENVIO       // Mensaje saliente generado por el usuario local
+        RECEPCION   // Mensaje entrante proveniente del nodo remoto
+        SALIDA      // Evento de control para apagar los hilos y procesos
+
+    // Estructura principal que empaqueta un mensaje de chat
+    Estructura Mensaje:
+        id_emisor AS Entero               // PID del proceso o identificador de nodo
+        texto AS Arreglo[TAM_MAX] de Caracter // Cuerpo del mensaje de texto plano
+        ip_destino AS Arreglo[16] de Caracter // Dirección IP remota (IPv4)
+        puerto_destino AS Entero          // Puerto de red remoto
+        tipo AS TipoMensaje               // Clasificación (ENVIO, RECEPCION, SALIDA)
+        tiempo AS Entero_Grande           // Marca de tiempo en milisegundos (Unix timestamp)
+
+    // Estructura que agrupa los canales FIFO (Pipes) de comunicación bidireccional
+    Estructura Tuberia:
+        A AS Arreglo[2] de Entero  // Canal de Entrada a la GUI:  Backend (Escribe A[1]) -> Interfaz (Lee A[0])
+        B AS Arreglo[2] de Entero  // Canal de Salida de la GUI: Interfaz (Escribe B[1]) -> Backend (Lee B[0])
+
+
+    // ==================== PROTOTIPOS DEL BACKEND (conexion.c) ====================
+    
+    Funcion hilo_lector_p2p(arg AS Puntero) Devuelve Puntero
+    Funcion hilo_escritor_p2p(arg AS Puntero) Devuelve Puntero
+    Funcion hilo_lector_pipe(arg AS Puntero) Devuelve Puntero
+    Funcion hilo_escritor_pipe(arg AS Puntero) Devuelve Puntero
+    
+    Procedimiento conexion(local AS Referencia a Tuberia)
+    Procedimiento enviar_msj(ip_destino AS Cadena, puerto_destino AS Entero, msg AS Mensaje)
+    
+    Funcion get_time_ms() Devuelve Entero_Grande
+    Procedimiento formatear_tiempo_str(tiempo_ms AS Entero_Grande, buffer_salida AS Referencia a Cadena)
+
+
+    // ==================== PROTOTIPOS DEL FRONTEND (interfaz.c) ====================
+    
+    Funcion hilo_lector_gui(arg AS Puntero) Devuelve Puntero
+    Funcion hilo_escritor_gui(arg AS Puntero) Devuelve Puntero
+    
+    Procedimiento interfaz_grafica(argc AS Entero, argv[] AS Cadena, padre AS Referencia a Tuberia)
+
+Fin Si
